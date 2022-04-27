@@ -21,6 +21,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.example.BusTicketBookingApi.filters.CorsFilter;
+import com.example.BusTicketBookingApi.filters.JwtRequestFilter;
+import com.example.BusTicketBookingApi.utils.PropertiesUtil;
 
 
 
@@ -34,14 +36,14 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	CorsFilter corsFilter;
 	
-//	@Autowired
-//	JwtRequestFilter jwtRequestFilter;
+	@Autowired
+	JwtRequestFilter jwtRequestFilter;
 	
 //	@Autowired
 //	SessionRequestFilter sessionRequestFilter;
 	
-//	@Autowired
-//	PropertiesUtil propertiesUtil;
+	@Autowired
+	PropertiesUtil propertiesUtil;
 	
 
 	// Authentication	
@@ -69,26 +71,27 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 			.anyRequest()
 			.authenticated();
 		
-		/*
+		
 		if(propertiesUtil.isSessionsBasedAuth())
 			http
 			.sessionManagement()
 			.sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
-		
 		if(propertiesUtil.isJWTBasedAuth())
-		*/
 			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		
+		if(propertiesUtil.isJWTBasedAuth()) {	
+			http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+		}
+		
+//		if(propertiesUtil.isSessionsBasedAuth())
+//			http.addFilterBefore(sessionRequestFilter, UsernamePasswordAuthenticationFilter.class);
+		
 		/*
 		http.exceptionHandling().authenticationEntryPoint((request, response, authException)->{	
 			response.sendRedirect("/users/login?msg=Please+login&status=danger&show=show");
 		});
 		
 		
-		if(propertiesUtil.isJWTBasedAuth()) {	
-			http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-		}
-		if(propertiesUtil.isSessionsBasedAuth())
-			http.addFilterBefore(sessionRequestFilter, UsernamePasswordAuthenticationFilter.class);
 		
 		http
 		.logout()
@@ -97,7 +100,6 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 			.deleteCookies("jwt","SESSION")
 			.logoutSuccessUrl("/users/login?msg=User+logged+out&status=success&show=show");
 		*/
-//	     http.addFilterAfter(corsFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 	
 	@Bean
