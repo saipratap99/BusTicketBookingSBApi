@@ -16,6 +16,8 @@ public interface LocationRepo extends JpaRepository<Location, Integer>{
 	@Query("SELECT locationName FROM Location order by locationName")
 	List<String> findAllProjectedByLocationName();
 	
+	List<Location> findByLocationNameContainingIgnoreCase(String name);
+	
 //	@Query("SELECT id, location_name FROM locations order by location_name")
 //	List<IdAndLocation> findAllProjectedBy();
 	

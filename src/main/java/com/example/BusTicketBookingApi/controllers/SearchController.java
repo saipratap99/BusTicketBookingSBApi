@@ -79,7 +79,13 @@ public class SearchController {
 		for(ServiceDetails service: serviceDetails) {
 			schedules.addAll(scheduleRepo.findAllByServiceDetailsAndWeekDay(service.getId(), date.getDay() + 1));
 		}
+		
 		return new ResponseEntity<>(schedules, HttpStatus.ACCEPTED);
+	}
+	
+	@GetMapping("/location/{locationName}")
+	public ResponseEntity<?> searchLocation(@PathVariable String locationName){
+		return new ResponseEntity<>(locationRepo.findByLocationNameContainingIgnoreCase(locationName), HttpStatus.ACCEPTED);
 	}
 	
 }
