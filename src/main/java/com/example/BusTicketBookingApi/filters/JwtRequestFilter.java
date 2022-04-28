@@ -37,13 +37,13 @@ public class JwtRequestFilter extends OncePerRequestFilter{
 			throws ServletException, IOException {
 		
 		if(propertiesUtil.isJWTBasedAuth())
-			authorizeUsingJwtFromCookie(request, response);
+			authorizeUsingJwtFromCookieOrHeader(request, response);
 		
 		filterChain.doFilter(request, response);
 		
 	}
 	
-	public void authorizeUsingJwtFromCookie(HttpServletRequest request, HttpServletResponse response) {
+	public void authorizeUsingJwtFromCookieOrHeader(HttpServletRequest request, HttpServletResponse response) {
 		String authorizationHeader = request.getHeader("Authorization"); 
 		String username = null;
 		String jwt = null;
@@ -70,6 +70,8 @@ public class JwtRequestFilter extends OncePerRequestFilter{
 				
 				usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+				response.addHeader("Access-Control-Expose-Headers", "Authorization");
+				response.setHeader("Authorization", "Bearer " + jwt);
 			}
 		}
 	}

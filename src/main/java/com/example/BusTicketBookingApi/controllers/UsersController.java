@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -95,6 +96,7 @@ public class UsersController {
 		return responseEntity;
 	}
 	
+	@CrossOrigin(exposedHeaders = "Authorization")
 	@PostMapping("/login")
 	public <T> ResponseEntity<?> authenticate(@RequestBody AuthenticationRequest authenticationRequest,
 									RedirectAttributes redirectAttributes,

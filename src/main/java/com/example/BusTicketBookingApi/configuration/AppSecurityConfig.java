@@ -61,13 +61,16 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 //		      cors.setAllowedOrigins(List.of("http://localhost:4200/"));
 //		      cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
 //		      cors.setAllowedHeaders(List.of("*"));
+//		      cors.setExposedHeaders(List.of("*"));
 //		      return cors;
 //		});
 		
 		http.csrf().disable()
 			.authorizeHttpRequests()
-			.antMatchers("/**/")
-			.permitAll()
+			.antMatchers("/api/*/admin/**").hasRole("ADMIN")
+			.antMatchers("/api/*/bus_details/**", "/schedule/**", "/service_details/**").hasAnyRole("ADMIN", "OPERATOR")
+			.antMatchers("/api/*/bookings/**").hasAnyRole("ADMIN", "OPERATOR","USER")
+			.antMatchers("/api/*/authenticate","/api/*/users/*").permitAll()
 			.anyRequest()
 			.authenticated();
 		
@@ -112,6 +115,8 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected AuthenticationManager authenticationManager() throws Exception {
 		return super.authenticationManager();
 	}
+	
+	
 	
 	
 }
