@@ -88,25 +88,23 @@ public class ServiceDetailsController {
 	@PostMapping("/create")
 	public ResponseEntity<?> create(@RequestBody ServiceDetailsRequest serviceDetailRequest, Principal principal, RedirectAttributes redirectAttributes) {
 		
-		ServiceDetails serviceDetail = new ServiceDetails();
+		
 		Optional<Location> departureLocation = locationRepo.findByLocationName(serviceDetailRequest.getDepartureLocation());
 		Optional<Location> arrivalLocation = locationRepo.findByLocationName(serviceDetailRequest.getArrivalLocation());
 		
 		User user = userRepo.findByEmail(principal.getName());
 		
 		if(user != null && departureLocation.isPresent() && arrivalLocation.isPresent()) {
-			serviceDetail.setServiceNumber(serviceDetailRequest.getServiceNumber());
-			serviceDetail.setServiceType(serviceDetailRequest.getServiceType());
-			serviceDetail.setDistance(serviceDetailRequest.getDistance());
+			ServiceDetails serviceDetail = serviceDetailRequest.getServiceDetailsInstance();
 			serviceDetail.setDepartureLocation(departureLocation.get());
 			serviceDetail.setArrivalLocation(arrivalLocation.get());
 			serviceDetail.genrateServiceName();
-			
 			serviceDetailsRepo.save(serviceDetail);
+			return new ResponseEntity<ServiceDetails>(serviceDetail, HttpStatus.ACCEPTED);
 		}else
 			return new ResponseEntity<String>("Error creating service details", HttpStatus.BAD_REQUEST);
 		
-		return new ResponseEntity<ServiceDetails>(serviceDetail, HttpStatus.ACCEPTED);
+		
 	}
 	
 	/*		

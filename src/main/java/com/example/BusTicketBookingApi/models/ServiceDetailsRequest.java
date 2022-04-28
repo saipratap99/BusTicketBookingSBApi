@@ -1,5 +1,6 @@
 package com.example.BusTicketBookingApi.models;
 
+import java.util.Optional;
 
 public class ServiceDetailsRequest {
 	
@@ -47,5 +48,14 @@ public class ServiceDetailsRequest {
 	
 	public void setArrivalLocation(String arrivalLocation) {
 		this.arrivalLocation = arrivalLocation;
+	}
+	
+	public ServiceDetails getServiceDetailsInstance() {
+		ServiceDetails serviceDetails = new ServiceDetails();
+		serviceDetails.setServiceNumber(this.getServiceNumber());
+		serviceDetails.setServiceType(this.getServiceType());
+		serviceDetails.setDistance(this.getDistance());
+		return serviceDetails;
+		
 	}
 }
