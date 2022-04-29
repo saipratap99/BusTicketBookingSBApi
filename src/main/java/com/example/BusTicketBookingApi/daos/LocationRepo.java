@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.BusTicketBookingApi.models.Location;
 
@@ -16,9 +17,8 @@ public interface LocationRepo extends JpaRepository<Location, Integer>{
 	@Query("SELECT locationName FROM Location order by locationName")
 	List<String> findAllProjectedByLocationName();
 	
-	List<Location> findByLocationNameContainingIgnoreCase(String name);
+	@Query("FROM Location where locationName like %:name% order by locationName")
+	List<Location> findAllByLocationNameIgnoreCase(String name);
 	
-//	@Query("SELECT id, location_name FROM locations order by location_name")
-//	List<IdAndLocation> findAllProjectedBy();
 	
 }

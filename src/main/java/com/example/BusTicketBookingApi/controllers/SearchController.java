@@ -85,7 +85,7 @@ public class SearchController {
 	
 	@GetMapping("/location/{locationName}")
 	public ResponseEntity<?> searchLocation(@PathVariable String locationName){
-		return new ResponseEntity<>(locationRepo.findByLocationNameContainingIgnoreCase(locationName), HttpStatus.ACCEPTED);
+		return new ResponseEntity<>(locationRepo.findAllByLocationNameIgnoreCase("%" + locationName + "%"), HttpStatus.ACCEPTED);
 	}
 	
 }
