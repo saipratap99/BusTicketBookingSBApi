@@ -2,6 +2,7 @@ package com.example.BusTicketBookingApi.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,6 @@ public class HomeController {
 	
 	@GetMapping("/about")
 	public ResponseEntity<?> about(){
-		return new ResponseEntity<String>("You can book tickets online all over the India.", HttpStatus.ACCEPTED);
+		return new ResponseEntity<String>("{\"data\": \"You can book tickets online all over the India.\"}", HttpStatus.ACCEPTED);
 	}
 }

@@ -17,10 +17,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.example.BusTicketBookingApi.filters.CorsFilter;
 import com.example.BusTicketBookingApi.filters.JwtRequestFilter;
 import com.example.BusTicketBookingApi.utils.PropertiesUtil;
 
@@ -33,8 +34,6 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	UserDetailsService userDetailsService;
 	
-	@Autowired
-	CorsFilter corsFilter;
 	
 	@Autowired
 	JwtRequestFilter jwtRequestFilter;
@@ -64,6 +63,8 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 //		      cors.setExposedHeaders(List.of("*"));
 //		      return cors;
 //		});
+		
+		http.cors();
 		
 		http.csrf().disable()
 			.authorizeHttpRequests()
@@ -115,8 +116,25 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected AuthenticationManager authenticationManager() throws Exception {
 		return super.authenticationManager();
 	}
-	
-	
+	/*
+	@Bean
+	public org.springframework.web.filter.CorsFilter corsConfigurationSource() {
+		System.out.println("cors config");
+		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		
+		final CorsConfiguration corsConfigurationSource = new CorsConfiguration();
+		
+		corsConfigurationSource.addExposedHeader("*");
+		corsConfigurationSource.addAllowedHeader("*");
+		corsConfigurationSource.addAllowedMethod("*");
+		corsConfigurationSource.addAllowedOrigin("*");
+		corsConfigurationSource.addAllowedHeader("*");
+		
+		
+		source.registerCorsConfiguration("/**", corsConfigurationSource);
+		return new org.springframework.web.filter.CorsFilter((org.springframework.web.cors.CorsConfigurationSource) corsConfigurationSource);	
+	}
+	*/
 	
 	
 }

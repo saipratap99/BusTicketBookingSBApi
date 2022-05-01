@@ -27,13 +27,4 @@ public class BusTicketBookingApiApplication {
 		};
 	}
 	
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		final CorsConfiguration corsConfigurationSource = new CorsConfiguration();
-		corsConfigurationSource.addExposedHeader("*");
-		
-		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", corsConfigurationSource);
-		return source;
-	}
 }

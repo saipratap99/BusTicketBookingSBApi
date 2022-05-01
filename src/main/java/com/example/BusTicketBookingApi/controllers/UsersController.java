@@ -96,10 +96,8 @@ public class UsersController {
 		return responseEntity;
 	}
 	
-	@CrossOrigin(exposedHeaders = "Authorization")
 	@PostMapping("/login")
 	public <T> ResponseEntity<?> authenticate(@RequestBody AuthenticationRequest authenticationRequest,
-									RedirectAttributes redirectAttributes,
 									HttpServletResponse resp, HttpServletRequest request) throws UsernameNotFoundException {
 		String jwt = "";
 		try {
@@ -127,10 +125,6 @@ public class UsersController {
 			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse(jwt),HttpStatus.ACCEPTED);
 			
 		}catch(BadCredentialsException e) {
-			redirectAttributes.addFlashAttribute("msg", "Invalid email or password");
-			redirectAttributes.addFlashAttribute("status","danger");
-			redirectAttributes.addFlashAttribute("show","show");
-			
 			return new ResponseEntity<String>("Invalid Email or Password", HttpStatus.BAD_REQUEST);
 		}
 		
