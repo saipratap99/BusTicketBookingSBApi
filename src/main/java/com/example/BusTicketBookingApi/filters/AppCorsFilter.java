@@ -24,7 +24,6 @@ public class AppCorsFilter extends OncePerRequestFilter{
 //		response.setHeader("Access-Control-Max-Age", "3600");
 //		response.setHeader("Access-Control-Allow-Headers", "Authorization, content-type, xsrf-token");
 		response.addHeader("Access-Control-Expose-Headers", "Authorization");
-		response.addHeader("Access-Control-Allow-Origin", "*");
 		response.addHeader("Access-Control-Allow-Methods", "*");
 		
 //		response.addHeader("Access-Control-Allow-Origin", "http://localhost:4200/");
