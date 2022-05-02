@@ -15,5 +15,6 @@ public interface BookedSeatsRepo extends JpaRepository<BookedSeat, Integer>{
 	@Query("Select seat FROM BookedSeat where schedule_id = :scheduleId and bus_details_id = :busId and doj = :doj and time = :time")
 	List<Seat> findAllByTripDetails(int scheduleId, int busId, String doj, String time);
 
+	List<BookedSeat> findAllByBookingDetailsId(int bookingId);
 	
 }
