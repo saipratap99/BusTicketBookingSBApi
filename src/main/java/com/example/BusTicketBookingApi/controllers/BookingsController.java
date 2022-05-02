@@ -55,9 +55,8 @@ public class BookingsController {
 		Optional<Schedule> schedule = scheduleRepo.findById(newBookingRequest.getScheduleId());
 		
 		if(schedule.isPresent() && user.isPresent()) {
-		    System.out.println("sch use");
+		    
 			if(newBookingRequest.getTime().getTime() == schedule.get().getDepartureTime().getTime()) {
-				System.out.println("date time");
 				BookingDetails bookingDetails = newBookingRequest.getInstanceWithProcessing(user.get(), schedule.get());
 				bookingDetails = bookingDeatilsRepo.save(bookingDetails);
 				
@@ -69,7 +68,7 @@ public class BookingsController {
 					}
 				}
 				
-				return new ResponseEntity<>("\"bookingId\": " + bookingDetails.getId(), HttpStatus.ACCEPTED);
+				return new ResponseEntity<>("{ \"bookingId\" : " + bookingDetails.getId() +"}", HttpStatus.ACCEPTED);
 			}
 		}
 		return new ResponseEntity<>("\"msg\": error creating new booking", HttpStatus.BAD_REQUEST);
