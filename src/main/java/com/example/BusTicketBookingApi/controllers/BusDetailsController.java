@@ -65,7 +65,7 @@ public class BusDetailsController {
 			busMap.put("Bus Name", busDetail.getBusName());
 			busMap.put("Bus Reg Number", busDetail.getBusRegNumber());
 			busMap.put("Bus Type", busDetail.getBusType());
-			busMap.put("Seating Type", busDetail.getSeatingType());
+//			busMap.put("Seating Type", busDetail.getSeatingType());
 			busMap.put("Seat Count", String.valueOf(busDetail.getSeatCount()));
 			busMap.put("Operator", busDetail.getOperator().getOperator());
 			busMap.put("Last Maintance", busDetail.getLastMaintance().toString());

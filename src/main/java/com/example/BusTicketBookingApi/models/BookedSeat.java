@@ -13,7 +13,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "booked_seats", uniqueConstraints = {@UniqueConstraint(columnNames = {"doj", "time", "bus_details_id", "seat_id", "schedule_id", "booking_details_id"})})
+@Table(name = "booked_seats", uniqueConstraints = {@UniqueConstraint(columnNames = {"doj", "time", "bus_details_id", "seat_id", "schedule_id"})})
 public class BookedSeat {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

@@ -28,8 +28,8 @@ public class BusDetails {
 	@Column(name = "bus_type", nullable = false)
 	private String busType;
 	
-	@Column(name = "seating_type", nullable = false)
-	private String seatingType;
+	@ManyToOne(optional = false)
+	private SeatingType seatingType;
 
 	@Column(name = "seat_count", nullable = false)
 	private int seatCount;
@@ -40,6 +40,7 @@ public class BusDetails {
 	@Column(name = "on_service", nullable = false)
 	private Date onService;
 	
+	
 	@Column(name = "bus_name", nullable = false)
 	private String busName;
 	
@@ -49,11 +50,10 @@ public class BusDetails {
 //	@OneToMany(mappedBy = "busDetails")
 //	List<Schedule> schedule;
 	
-	
 	// created_at, updated_at
 	
 	public void generateBusName() {
-		this.setBusName(this.operator.getOperator() + " " + this.getModel() + " " + this.getSeatingType() + " " + this.getBusType());
+		this.setBusName(this.operator.getOperator() + " " + this.getModel() + " " + this.getSeatingType().getSeating() + " " + this.getBusType());
 	}
 
 	public String getModel() {
@@ -104,11 +104,13 @@ public class BusDetails {
 		this.busType = busType;
 	}
 
-	public String getSeatingType() {
+	
+
+	public SeatingType getSeatingType() {
 		return seatingType;
 	}
 
-	public void setSeatingType(String seatingType) {
+	public void setSeatingType(SeatingType seatingType) {
 		this.seatingType = seatingType;
 	}
 
