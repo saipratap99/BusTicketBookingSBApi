@@ -74,4 +74,20 @@ public class BasicUtil {
 		redirectAttributes.addFlashAttribute("show", show);
 	}
 	
+	public String getJSONString(String key, String value) {
+		return "\""+ key + "\"" + ":" + "\"" + value + "\"";
+	}
+	
+	public String getJSONString(String key, int value) {
+		return "\""+ key + "\"" + ":" + value;
+	}
+	
+	public String getJSONString(String key, double value) {
+		return "\""+ key + "\"" + ":" + value;
+	}
+	
+	public boolean isBothTimesAreEquals(Time t1, Time t2) {
+		return t1.getTime() == t2.getTime();
+	}
+	
 }

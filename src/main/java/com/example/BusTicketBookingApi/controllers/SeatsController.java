@@ -24,11 +24,14 @@ import com.example.BusTicketBookingApi.daos.BookedSeatsRepo;
 import com.example.BusTicketBookingApi.daos.BusDetailsRepo;
 import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.SeatsRepo;
+import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.ScheduleNotFoundException;
 import com.example.BusTicketBookingApi.models.BookedSeat;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.Seat;
 import com.example.BusTicketBookingApi.models.SeatResponse;
+import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 @RestController
 @RequestMapping("/api/v1/seats")
@@ -44,34 +47,54 @@ public class SeatsController {
 	SeatsRepo seatsRepo;
 	
 	@Autowired
-	BookedSeatsRepo bookedSeatsRepo;
+	BasicUtil basicUtil;
 	
-	@GetMapping("/")
-	public ResponseEntity<?> home(){
-		return new ResponseEntity<String>("{\"msg\": \"Error fetching seats\"}" , HttpStatus.BAD_REQUEST);
-	}
+	@Autowired
+	BookedSeatsRepo bookedSeatsRepo;
 	
 	@GetMapping("/schedule/{scheduleId}/bus/{busId}/{doj}/{time}")
 	public ResponseEntity<?> getAvailableSeats(@PathVariable int scheduleId, @PathVariable int busId,@PathVariable Date doj,@PathVariable Time time, Principal principal){
 		
-		Optional<Schedule> schedule = scheduleRepo.findById(scheduleId);
-		Optional<BusDetails> busDetails = busDetailsRepo.findById(busId);
-		
-		if(schedule.isPresent() && busDetails.isPresent() && schedule.get().getWeekDay() == doj.getDay() + 1) {
-			List<Seat> totalSeats = seatsRepo.findAllBySeatingType(busDetails.get().getSeatingType().getId());
-			List<Seat> bookedSeats = bookedSeatsRepo.findAllByTripDetails(scheduleId, busId, doj.toString(), time.toString());
-			Map<Integer, SeatResponse> availableSeats = new LinkedHashMap<>();
+		try {
+			Optional<Schedule> schedule = scheduleRepo.findById(scheduleId);
+			Optional<BusDetails> busDetails = busDetailsRepo.findById(busId);
+			
+			
+			schedule.orElseThrow(() -> new ScheduleNotFoundException("Schedule not found"));
+			busDetails.orElseThrow(() -> new BusDetailsNotFoundException("Bus details not found!"));
+			
+			if(!(schedule.get().getWeekDay() == doj.getDay() + 1))
+				return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Invalid Departure date for this schedule") + "}" , HttpStatus.BAD_REQUEST);
+			
+			if(!basicUtil.isBothTimesAreEquals(schedule.get().getDepartureTime(), time))
+				return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Invalid Departure time for this schedule") + "}" , HttpStatus.BAD_REQUEST);
+			
+			if(schedule.get().getWeekDay() == doj.getDay() + 1 && basicUtil.isBothTimesAreEquals(schedule.get().getDepartureTime(), time)) {
+				
+				List<Seat> totalSeats = seatsRepo.findAllBySeatingType(busDetails.get().getSeatingType().getId());
+				List<Seat> bookedSeats = bookedSeatsRepo.findAllByTripDetails(scheduleId, busId, doj.toString(), time.toString());
+				
+				Map<Integer, SeatResponse> availableSeats = new LinkedHashMap<>();
 
-			for(Seat seat: totalSeats)
-				availableSeats.put(seat.getId(), new SeatResponse(seat.getId(), seat.getRow(), seat.getCol(), seat.getSeatName(), false));
-			
-			for(Seat seat: bookedSeats)
-				if(availableSeats.containsKey(seat.getId()))
-					availableSeats.get(seat.getId()).setBooked(true);
-			
-			return new ResponseEntity<>(availableSeats.values(), HttpStatus.ACCEPTED);
+				for(Seat seat: totalSeats)
+					availableSeats.put(seat.getId(), new SeatResponse(seat.getId(), seat.getRow(), seat.getCol(), seat.getSeatName(), false));
+				
+				for(Seat seat: bookedSeats)
+					if(availableSeats.containsKey(seat.getId()))
+						availableSeats.get(seat.getId()).setBooked(true);
+				
+				return new ResponseEntity<>(availableSeats.values(), HttpStatus.ACCEPTED);
+			}
+		}catch(ScheduleNotFoundException e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST); 
+		} catch (BusDetailsNotFoundException e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
 		}
-		
 		
 		return new ResponseEntity<String>("{\"msg\": \"Error fetching seats\"}" , HttpStatus.BAD_REQUEST);
 		

@@ -42,32 +42,6 @@ public class SearchController {
 	@Autowired
 	BasicUtil basicUtil;
 	
-	/*
-	@GetMapping("/get")
-	public String getBuses(String depLocation, String arrLocation, Date date,Model model, RedirectAttributes redirectAttributes, Principal principal) {
-		
-		List<String> locations = locationRepo.findAllProjectedByLocationName();
-		
-		model.addAttribute("locations", locations);
-		model.addAttribute("arrLocation", arrLocation);
-		model.addAttribute("depLocation", depLocation);
-		model.addAttribute("date", date);
-		
-		
-		Optional<Location> departureLocation = locationRepo.findByLocationName(depLocation);
-		Optional<Location> arrivalLocation = locationRepo.findByLocationName(arrLocation);
-		
-		if(departureLocation.isPresent() && arrivalLocation.isPresent()) {
-			if(departureLocation.get().getId() != arrivalLocation.get().getId()) {
-				return "redirect:/bookings/get/" + depLocation+ "/" + departureLocation.get().getId() + "/" + arrLocation + "/" + arrivalLocation.get().getId() + "/" + date.toString();
-			}
-		}
-		
-		basicUtil.addNavBarAttributesToModel(principal, model);
-		
-		return "redirect:/bookings/new.jsp";
-	}
-	*/
 	
 	@GetMapping("/buses/{depLocation}/{depId}/{arrLocation}/{arrId}/{date}")
 	public ResponseEntity<?> availableBuses(@PathVariable String depLocation,@PathVariable int depId,@PathVariable String arrLocation,@PathVariable int arrId,@PathVariable Date date, Model model, Principal principal) {
