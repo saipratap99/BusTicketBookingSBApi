@@ -3,6 +3,7 @@ package com.example.BusTicketBookingApi.controllers;
 import java.security.Principal;
 import java.sql.Date;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -95,6 +96,20 @@ public class BookingsController {
 			return new ResponseEntity<>(bookingDetailsResponse, HttpStatus.ACCEPTED);
 		}
 		else
+			
+			return new ResponseEntity<>("{ \"msg\": \"Couldn't find Booking details with id " +  bookingId +"\"   }", HttpStatus.BAD_REQUEST);
+	}
+	
+	
+	@PostMapping("/confirm/{bookingId}")
+	public ResponseEntity<?> confirmBooking(@PathVariable int bookingId){
+		Optional<BookingDetails> bookingDetails = bookingDeatilsRepo.findById(bookingId);
+		if(bookingDetails.isPresent()) {
+			bookingDetails.get().setBookedAt(new Timestamp((new java.util.Date().getTime())));
+			bookingDetails.get().setStatus("SUCCESS");
+			bookingDeatilsRepo.save(bookingDetails.get());
+			return new ResponseEntity<>("{ \"bookingId\" : " + bookingDetails.get().getId() +"}", HttpStatus.ACCEPTED);
+		}else
 			return new ResponseEntity<>("{ \"msg\": \"Couldn't find Booking details with id " +  bookingId +"\"   }", HttpStatus.BAD_REQUEST);
 	}
 	
