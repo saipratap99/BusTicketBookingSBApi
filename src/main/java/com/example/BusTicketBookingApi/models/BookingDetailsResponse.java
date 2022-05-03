@@ -4,15 +4,34 @@ import java.sql.Date;
 import java.sql.Time;
 
 public class BookingDetailsResponse {
+	private int id;
 	private BusDetails busDetails;
 	private Schedule scheduleDetails;
 	private String[] seats;
 	private Date doj;
 	private Time time;
+	private String status;
 	private double basePrice;
 	private double gst;
 	private double discount;
 	
+	
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	public BusDetails getBusDetails() {
 		return busDetails;
 	}
@@ -79,7 +98,10 @@ public class BookingDetailsResponse {
 	
 	
 	public BookingDetailsResponse getInstance(BookingDetails bookingDetails, String[] seats) {
+		
 		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse();
+		
+		bookingDetailsResponse.setId(bookingDetails.getId());
 		bookingDetailsResponse.setGst(bookingDetails.getGst());
 		bookingDetailsResponse.setDiscount(bookingDetails.getDiscount());
 		bookingDetailsResponse.setBasePrice(bookingDetails.getBasePrice());
@@ -88,6 +110,7 @@ public class BookingDetailsResponse {
 		bookingDetailsResponse.setDoj(bookingDetails.getDoj());
 		bookingDetailsResponse.setTime(bookingDetails.getTime());
 		bookingDetailsResponse.setSeats(seats);
+		bookingDetailsResponse.setStatus(bookingDetails.getStatus());
 		
 		return bookingDetailsResponse;
 	}

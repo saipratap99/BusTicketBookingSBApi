@@ -26,16 +26,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.BusTicketBookingApi.daos.BusDetailsRepo;
 import com.example.BusTicketBookingApi.daos.LocationRepo;
+import com.example.BusTicketBookingApi.daos.SeatingTypeRepo;
 import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
 import com.example.BusTicketBookingApi.daos.UserRepo;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.BusDetailsRequest;
+import com.example.BusTicketBookingApi.models.SeatingType;
 import com.example.BusTicketBookingApi.models.User;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 @RestController
 @RequestMapping("/api/v1/bus_details")
 public class BusDetailsController {
+	
+
+	@Autowired
+	SeatingTypeRepo seatingTypeRepo;
 	
 	@Autowired
 	LocationRepo locationRepo;
@@ -95,7 +101,12 @@ public class BusDetailsController {
 		Optional<User> user = basicUtil.getUser(principal);
 		
 		if(user.isPresent()) {
-			BusDetails busDetails = busDetailsRequest.getBusDetailsInstance();
+			Optional<SeatingType> seatingType = seatingTypeRepo.findById(busDetailsRequest.getSeatingTypeId());
+			
+			if(seatingType.isEmpty())
+				return new ResponseEntity<String>("Error creating bus details with given seating type", HttpStatus.BAD_REQUEST);
+			
+			BusDetails busDetails = busDetailsRequest.getBusDetailsInstance(seatingType.get());
 			busDetails.setOperator(user.get());
 			busDetails.generateBusName();
 			busDetailsRepo.save(busDetails);

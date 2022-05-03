@@ -1,9 +1,11 @@
 package com.example.BusTicketBookingApi.models;
 
 import java.sql.Date;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.example.BusTicketBookingApi.daos.SeatingTypeRepo;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 public class BusDetailsRequest {
@@ -14,11 +16,21 @@ public class BusDetailsRequest {
 	private String model;
 	private String busRegNumber;
 	private String busType;
-//	private String seatingType;
 	private int seatCount;
 	private String lastMaintance;
 	private String onService;
+	private int seatingTypeId;
 	
+	
+	
+	public int getSeatingTypeId() {
+		return seatingTypeId;
+	}
+
+	public void setSeatingTypeId(int seatingTypeId) {
+		this.seatingTypeId = seatingTypeId;
+	}
+
 	public String getModel() {
 		return model;
 	}
@@ -75,13 +87,15 @@ public class BusDetailsRequest {
 		this.onService = onService;
 	}
 	
-	public BusDetails getBusDetailsInstance() {
+	public BusDetails getBusDetailsInstance(SeatingType seatingType) {
+		
+		
 		BusDetails busDetails = new BusDetails();
 		busDetails.setModel(model);
 		busDetails.setBusRegNumber(busRegNumber);
 		busDetails.setBusType(busType);
 		busDetails.setSeatCount(seatCount);
-//		busDetails.setSeatingType(seatingType);
+		busDetails.setSeatingType(seatingType);
 		busDetails.setLastMaintance(Date.valueOf(lastMaintance));
 		busDetails.setOnService(Date.valueOf(onService));
 		

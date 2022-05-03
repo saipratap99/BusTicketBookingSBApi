@@ -132,10 +132,22 @@ public class BookingsController {
 	public ResponseEntity<?> confirmBooking(@PathVariable int bookingId){
 		Optional<BookingDetails> bookingDetails = bookingDeatilsRepo.findById(bookingId);
 		if(bookingDetails.isPresent()) {
+			
 			bookingDetails.get().setBookedAt(new Timestamp((new java.util.Date().getTime())));
 			bookingDetails.get().setStatus("SUCCESS");
 			bookingDeatilsRepo.save(bookingDetails.get());
-			return new ResponseEntity<>("{ \"bookingId\" : " + bookingDetails.get().getId() +"}", HttpStatus.ACCEPTED);
+			
+			List<BookedSeat> bookedSeats = bookedSeatsRepo.findAllByBookingDetailsId(bookingId);
+			String[] seats = new String[bookedSeats.size()];
+			
+			for(int i = 0; i < bookedSeats.size(); i++)
+				seats[i] = bookedSeats.get(i).getSeat().getSeatName();
+			
+			BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse();
+			
+			bookingDetailsResponse = bookingDetailsResponse.getInstance(bookingDetails.get(), seats);
+			
+			return new ResponseEntity<>(bookingDetailsResponse, HttpStatus.ACCEPTED);
 		}else
 			return new ResponseEntity<>("{ \"msg\": \"Couldn't find Booking details with id " +  bookingId +"\"   }", HttpStatus.BAD_REQUEST);
 	}
