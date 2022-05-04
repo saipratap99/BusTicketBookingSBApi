@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,6 +52,30 @@ public class BookingsController {
 	
 	@Autowired
 	SeatsRepo seatsRepo;
+	
+	@GetMapping("/")
+	public ResponseEntity<?> getAllBookings(Principal principal){
+		Optional<User> user = basicUtil.getUser(principal);
+		List<BookingDetails> bookingDetails = bookingDeatilsRepo.findAllByUserId(user.get().getId());
+		List<BookingDetailsResponse> response = new LinkedList<>();
+		
+		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse(); 
+		
+		for(BookingDetails bookDetail: bookingDetails) {
+			if(!bookDetail.getStatus().equals("SUCCESS"))
+				continue;
+			List<BookedSeat> bookedSeats = bookedSeatsRepo.findAllByBookingDetailsId(bookDetail.getId());
+			String[] seats = new String[bookedSeats.size()];
+			
+			for(int i = 0; i < bookedSeats.size(); i++)
+				seats[i] = bookedSeats.get(i).getSeat().getSeatName();
+			
+			response.add(bookingDetailsResponse.getInstance(bookDetail, seats));
+		}
+		
+		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+		
+	}
 	
 	@PostMapping("/new")
 	public ResponseEntity<?> createNewBooking(@RequestBody NewBookingRequest newBookingRequest, Principal principal){
