@@ -65,27 +65,31 @@ public class BusDetailsController {
 	
 	@GetMapping("/")
 	public ResponseEntity<?> getBuses(Model model, Principal principal) {
-				
-		List<Map<String, String>> busesMap = new LinkedList<>();
-		List<BusDetails> busDetails = busDetailsRepo.findAll();
-	
-		for(BusDetails busDetail: busDetails) {
-			Map<String, String> busMap = new LinkedHashMap<>();
-
-			busMap.put("Bus Id", String.valueOf(busDetail.getId()));
-			busMap.put("Bus Name", busDetail.getBusName());
-			busMap.put("Bus Reg Number", busDetail.getBusRegNumber());
-			busMap.put("Bus Type", busDetail.getBusType());
-//			busMap.put("Seating Type", busDetail.getSeatingType());
-			busMap.put("Seat Count", String.valueOf(busDetail.getSeatCount()));
-			busMap.put("Operator", busDetail.getOperator().getOperator());
-			busMap.put("Last Maintance", busDetail.getLastMaintance().toString());
-			busMap.put("On Service", busDetail.getOnService().toString());
-			
-			busesMap.add(busMap);
-		}
+		try {
+			List<Map<String, String>> busesMap = new LinkedList<>();
+			List<BusDetails> busDetails = busDetailsRepo.findAll();
 		
-		return new ResponseEntity<>(busesMap, HttpStatus.ACCEPTED);
+			for(BusDetails busDetail: busDetails) {
+				Map<String, String> busMap = new LinkedHashMap<>();
+
+				busMap.put("id", String.valueOf(busDetail.getId()));
+				busMap.put("busName", busDetail.getBusName());
+				busMap.put("busRegNumber", busDetail.getBusRegNumber());
+				busMap.put("busType", busDetail.getBusType());
+				busMap.put("seatingType", busDetail.getSeatingType().getSeating());
+//				busMap.put("seatCount", String.valueOf(busDetail.getSeatCount()));
+				busMap.put("operator", busDetail.getOperator().getOperator());
+				busMap.put("lastMaintance", busDetail.getLastMaintance().toString());
+				busMap.put("onService", busDetail.getOnService().toString());
+				
+				busesMap.add(busMap);
+			}
+			
+			return new ResponseEntity<>(busesMap, HttpStatus.ACCEPTED);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 	@GetMapping("/{id}")
