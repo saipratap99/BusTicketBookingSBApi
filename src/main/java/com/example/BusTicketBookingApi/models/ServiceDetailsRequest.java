@@ -58,4 +58,13 @@ public class ServiceDetailsRequest {
 		return serviceDetails;
 		
 	}
+
+	public ServiceDetails getUpdatedServiceDetailsInstance(ServiceDetails serviceDetails) {
+		
+		serviceDetails.setServiceNumber(serviceNumber);
+		serviceDetails.setServiceType(serviceType);
+		serviceDetails.setDistance(distance);
+		
+		return serviceDetails;
+	}
 }

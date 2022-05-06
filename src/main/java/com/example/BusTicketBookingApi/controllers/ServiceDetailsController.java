@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.BusTicketBookingApi.daos.LocationRepo;
 import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
 import com.example.BusTicketBookingApi.daos.UserRepo;
+import com.example.BusTicketBookingApi.exceptions.LocationNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.ServiceDetailsNotFoundException;
 import com.example.BusTicketBookingApi.models.Location;
 import com.example.BusTicketBookingApi.models.ServiceDetails;
 import com.example.BusTicketBookingApi.models.ServiceDetailsRequest;
@@ -53,85 +56,106 @@ public class ServiceDetailsController {
 	
 	@GetMapping("/")
 	public ResponseEntity<?> index(Model model, Principal principal) {
+		try {
+			List<Map<String, String>> servicesMap = new LinkedList<>();
+			List<ServiceDetails> serviceDetails = serviceDetailsRepo.findAll();
 		
-		List<Map<String, String>> servicesMap = new LinkedList<>();
-		List<ServiceDetails> serviceDetails = serviceDetailsRepo.findAll();
-	
-		for(ServiceDetails serviceDetail: serviceDetails) {
-			Map<String, String> serviceMap = new LinkedHashMap<>();
-			
-			serviceMap.put("Service Id", String.valueOf(serviceDetail.getId()));
-			serviceMap.put("Service Number", serviceDetail.getServiceNumber());
-			serviceMap.put("Service Name", serviceDetail.getServiceName());
-			serviceMap.put("Service Type", serviceDetail.getServiceType());
-			serviceMap.put("Departure Location", serviceDetail.getDepartureLocation().getLocationName());
-			serviceMap.put("Arrival Location", serviceDetail.getArrivalLocation().getLocationName());
-			serviceMap.put("Distance", String.valueOf(serviceDetail.getDistance()));
-			
-			servicesMap.add(serviceMap);
+			for(ServiceDetails serviceDetail: serviceDetails) {
+				Map<String, String> serviceMap = new LinkedHashMap<>();
+				
+				serviceMap.put("id", String.valueOf(serviceDetail.getId()));
+				serviceMap.put("serviceNumber", serviceDetail.getServiceNumber());
+				serviceMap.put("serviceName", serviceDetail.getServiceName());
+				serviceMap.put("serviceType", serviceDetail.getServiceType());
+				serviceMap.put("departureLocation", serviceDetail.getDepartureLocation().getLocationName());
+				serviceMap.put("arrivalLocation", serviceDetail.getArrivalLocation().getLocationName());
+				serviceMap.put("distance", String.valueOf(serviceDetail.getDistance()));
+				
+				servicesMap.add(serviceMap);
+			}
+			return new ResponseEntity<>(servicesMap, HttpStatus.ACCEPTED);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
 		}
 		
-		
-		return new ResponseEntity<>(servicesMap, HttpStatus.ACCEPTED);
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> show(@PathVariable int id, Model model, Principal principal) {
-		Optional<ServiceDetails> serviceDetails = serviceDetailsRepo.findById(id);		
-		
-		if(!serviceDetails.isPresent())
-			return new ResponseEntity<String>("Couldn't find Service Details with id " + id, HttpStatus.BAD_REQUEST);
-		
-		return new ResponseEntity<ServiceDetails>(serviceDetails.get(), HttpStatus.ACCEPTED);
+		try {
+			Optional<ServiceDetails> serviceDetails = serviceDetailsRepo.findById(id);		
+			serviceDetails.orElseThrow(() -> new ServiceDetailsNotFoundException("Service details with id " + id + " not found"));
+			return new ResponseEntity<>(serviceDetails.get(), HttpStatus.OK);
+		}catch(ServiceDetailsNotFoundException e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 	
 	@PostMapping("/create")
 	public ResponseEntity<?> create(@RequestBody ServiceDetailsRequest serviceDetailRequest, Principal principal, RedirectAttributes redirectAttributes) {
-		
-		
-		Optional<Location> departureLocation = locationRepo.findByLocationName(serviceDetailRequest.getDepartureLocation());
-		Optional<Location> arrivalLocation = locationRepo.findByLocationName(serviceDetailRequest.getArrivalLocation());
-		
-		User user = userRepo.findByEmail(principal.getName());
-		
-		if(user != null && departureLocation.isPresent() && arrivalLocation.isPresent()) {
+		try {
+
+			Optional<Location> departureLocation = locationRepo.findByLocationName(serviceDetailRequest.getDepartureLocation());
+			Optional<Location> arrivalLocation = locationRepo.findByLocationName(serviceDetailRequest.getArrivalLocation());
+			departureLocation.orElseThrow(() -> new LocationNotFoundException("Departure location " + serviceDetailRequest.getDepartureLocation() + " not found"));
+			arrivalLocation.orElseThrow(() -> new LocationNotFoundException("Arrival location " + serviceDetailRequest.getArrivalLocation() + " not found"));
+			
 			ServiceDetails serviceDetail = serviceDetailRequest.getServiceDetailsInstance();
 			serviceDetail.setDepartureLocation(departureLocation.get());
 			serviceDetail.setArrivalLocation(arrivalLocation.get());
 			serviceDetail.genrateServiceName();
 			serviceDetailsRepo.save(serviceDetail);
+			
 			return new ResponseEntity<ServiceDetails>(serviceDetail, HttpStatus.ACCEPTED);
-		}else
-			return new ResponseEntity<String>("Error creating service details", HttpStatus.BAD_REQUEST);
-		
+		}catch(LocationNotFoundException e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}
 		
 	}
 	
-	/*		
-	@PostMapping("/{id}")
-	public String update(@PathVariable int id, ServiceDetails serviceDetail, String depLocation, String arrLocation, Model model, Principal principal, RedirectAttributes redirectAttributes) {
+	
+	@PutMapping("/edit/{id}")
+	public ResponseEntity<?> update(@PathVariable int id, @RequestBody ServiceDetailsRequest serviceDetailRequest, Principal principal) {
 		
-		Optional<ServiceDetails> existingServiceDetails = serviceDetailsRepo.findById(id);		
-		if(!existingServiceDetails.isPresent())
-			return "redirect:/service_details/";
-		
-		Optional<Location> departureLocation = locationRepo.findByLocationName(depLocation);
-		Optional<Location> arrivalLocation = locationRepo.findByLocationName(arrLocation);
-		
-		Optional<User> user = basicUtil.getUser(principal);
-		
-		if(user.isPresent() && departureLocation.isPresent() && arrivalLocation.isPresent() && user.get().getRole().equals("ROLE_OPERATOR")) {
-			serviceDetail.setId(id);
+		try {
+			Optional<User> user = basicUtil.getUser(principal);
+			
+			Optional<ServiceDetails> existingServiceDetails = serviceDetailsRepo.findById(id);		
+			existingServiceDetails.orElseThrow(() -> new ServiceDetailsNotFoundException("Service details with id " + id + " not found"));
+			
+			
+			Optional<Location> departureLocation = locationRepo.findByLocationName(serviceDetailRequest.getDepartureLocation());
+			Optional<Location> arrivalLocation = locationRepo.findByLocationName(serviceDetailRequest.getArrivalLocation());
+			departureLocation.orElseThrow(() -> new LocationNotFoundException("Departure location " + serviceDetailRequest.getDepartureLocation() + " not found"));
+			arrivalLocation.orElseThrow(() -> new LocationNotFoundException("Arrival location " + serviceDetailRequest.getArrivalLocation() + " not found"));
+			
+			ServiceDetails serviceDetail = serviceDetailRequest.getUpdatedServiceDetailsInstance(existingServiceDetails.get());
 			serviceDetail.setDepartureLocation(departureLocation.get());
 			serviceDetail.setArrivalLocation(arrivalLocation.get());
 			serviceDetail.genrateServiceName();
+			
 			serviceDetailsRepo.save(serviceDetail);
-			basicUtil.addMsgToRedirectFlash(serviceDetail.getServiceName() + " updated successfully!", "success", "show", redirectAttributes);
+			
+			return new ResponseEntity<ServiceDetails>(serviceDetail, HttpStatus.OK);
+			
+		}catch(ServiceDetailsNotFoundException e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
 		}
-		
-		return "redirect:/service_details/";
 	
 	}
-	*/
+	
 }
