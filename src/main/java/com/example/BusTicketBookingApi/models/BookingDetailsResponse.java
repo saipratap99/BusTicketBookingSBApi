@@ -2,6 +2,7 @@ package com.example.BusTicketBookingApi.models;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.sql.Timestamp;
 
 public class BookingDetailsResponse {
 	private int id;
@@ -14,8 +15,17 @@ public class BookingDetailsResponse {
 	private double basePrice;
 	private double gst;
 	private double discount;
+	private Timestamp bookedAt;
 	
 	
+	public Timestamp getBookedAt() {
+		return bookedAt;
+	}
+
+	public void setBookedAt(Timestamp bookedAt) {
+		this.bookedAt = bookedAt;
+	}
+
 	public int getId() {
 		return id;
 	}
@@ -102,7 +112,7 @@ public class BookingDetailsResponse {
 		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse();
 		
 		bookingDetailsResponse.setId(bookingDetails.getId());
-		bookingDetailsResponse.setGst(bookingDetails.getGst());
+		bookingDetailsResponse.setGst(bookingDetails.getGst());		
 		bookingDetailsResponse.setDiscount(bookingDetails.getDiscount());
 		bookingDetailsResponse.setBasePrice(bookingDetails.getBasePrice());
 		bookingDetailsResponse.setBusDetails(bookingDetails.getSchedule().getBusDetails());
@@ -111,6 +121,7 @@ public class BookingDetailsResponse {
 		bookingDetailsResponse.setTime(bookingDetails.getTime());
 		bookingDetailsResponse.setSeats(seats);
 		bookingDetailsResponse.setStatus(bookingDetails.getStatus());
+		bookingDetailsResponse.setBookedAt(bookingDetails.getBookedAt());
 		
 		return bookingDetailsResponse;
 	}

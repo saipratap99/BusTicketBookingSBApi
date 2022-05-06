@@ -77,11 +77,12 @@ public class SeatsController {
 				Map<Integer, SeatResponse> availableSeats = new LinkedHashMap<>();
 
 				for(Seat seat: totalSeats)
-					availableSeats.put(seat.getId(), new SeatResponse(seat.getId(), seat.getRow(), seat.getCol(), seat.getSeatName(), false));
+					availableSeats.put(seat.getId(), new SeatResponse(seat.getId(), seat.getRow(), seat.getCol(), seat.getSeatName(), seat.getSeatingType().getSeating(), false));
 				
 				for(Seat seat: bookedSeats)
 					if(availableSeats.containsKey(seat.getId()))
 						availableSeats.get(seat.getId()).setBooked(true);
+				
 				
 				return new ResponseEntity<>(availableSeats.values(), HttpStatus.ACCEPTED);
 			}

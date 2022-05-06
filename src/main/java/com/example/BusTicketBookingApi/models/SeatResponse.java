@@ -6,16 +6,32 @@ public class SeatResponse {
 	private int seatRow;
 	private int seatCol;
 	private String seatName;
+	private String seatingType;
 	private boolean isBooked;
 	
 	public SeatResponse() {
 	}
+	
+	
 
-	public SeatResponse(int seatId, int seatRow, int seatCol, String seatName, boolean isBooked) {
+	public String getSeatingType() {
+		return seatingType;
+	}
+
+
+
+	public void setSeatingType(String seatingType) {
+		this.seatingType = seatingType;
+	}
+
+
+
+	public SeatResponse(int seatId, int seatRow, int seatCol, String seatName, String seatingType, boolean isBooked) {
 		this.seatId = seatId;
 		this.seatRow = seatRow;
 		this.seatCol = seatCol;
 		this.seatName = seatName;
+		this.seatingType = seatingType;
 		this.isBooked = isBooked;
 	}
 

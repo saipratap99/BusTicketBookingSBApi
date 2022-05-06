@@ -20,9 +20,17 @@ public class BusDetailsRequest {
 	private String lastMaintance;
 	private String onService;
 	private int seatingTypeId;
+	private String seatingType;
 	
 	
-	
+	public String getSeatingType() {
+		return seatingType;
+	}
+
+	public void setSeatingType(String seatingType) {
+		this.seatingType = seatingType;
+	}
+
 	public int getSeatingTypeId() {
 		return seatingTypeId;
 	}
@@ -100,6 +108,17 @@ public class BusDetailsRequest {
 		busDetails.setOnService(Date.valueOf(onService));
 		
 		return busDetails;
+	}
+
+	public BusDetails updateBusDetailsInstance(BusDetails existingBusDetails, SeatingType seatingType) {
+		existingBusDetails.setModel(model);
+		existingBusDetails.setBusRegNumber(busRegNumber);
+		existingBusDetails.setBusType(busType);
+		existingBusDetails.setSeatCount(seatCount);
+		existingBusDetails.setSeatingType(seatingType);
+		existingBusDetails.setLastMaintance(Date.valueOf(lastMaintance));
+		existingBusDetails.setOnService(Date.valueOf(onService));
+		return existingBusDetails;
 	}
 	
 }

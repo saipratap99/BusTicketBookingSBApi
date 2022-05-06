@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.validation.Validation;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -29,6 +32,8 @@ import com.example.BusTicketBookingApi.daos.LocationRepo;
 import com.example.BusTicketBookingApi.daos.SeatingTypeRepo;
 import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
 import com.example.BusTicketBookingApi.daos.UserRepo;
+import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.SeatingTypeNotFound;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.BusDetailsRequest;
 import com.example.BusTicketBookingApi.models.SeatingType;
@@ -85,54 +90,85 @@ public class BusDetailsController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> showBusDetails(@PathVariable int id ,Model model, Principal principal) {
-		Optional<BusDetails> busDetails = busDetailsRepo.findById(id);
-		
-		if(busDetails.isPresent())
+		try {
+			Optional<BusDetails> busDetails = busDetailsRepo.findById(id);
+			busDetails.orElseThrow(() -> new BusDetailsNotFoundException("Couldn't find Bus details with id " + id));
 			return new ResponseEntity<BusDetails>(busDetails.get(), HttpStatus.ACCEPTED);
-		else
-			return new ResponseEntity<String>("Couldn't find Bus details with id " + id, HttpStatus.BAD_REQUEST);
+		}catch(BusDetailsNotFoundException e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 	
 	
 	@PostMapping("/create")
-	public ResponseEntity<?> create(@RequestBody BusDetailsRequest busDetailsRequest, Model model, Principal principal, RedirectAttributes redirectAttributes) {
+	public ResponseEntity<?> create(@RequestBody BusDetailsRequest busDetailsRequest, Principal principal) {
 		
-		Optional<User> user = basicUtil.getUser(principal);
-		
-		if(user.isPresent()) {
-			Optional<SeatingType> seatingType = seatingTypeRepo.findById(busDetailsRequest.getSeatingTypeId());
+		try {
 			
-			if(seatingType.isEmpty())
-				return new ResponseEntity<String>("Error creating bus details with given seating type", HttpStatus.BAD_REQUEST);
+			Optional<User> user = basicUtil.getUser(principal);
+			Optional<SeatingType> seatingType = seatingTypeRepo.findBySeating(busDetailsRequest.getSeatingType());
+			seatingType.orElseThrow(() -> new SeatingTypeNotFound(busDetailsRequest.getSeatingType() +  "  seating type not found"));
 			
 			BusDetails busDetails = busDetailsRequest.getBusDetailsInstance(seatingType.get());
 			busDetails.setOperator(user.get());
 			busDetails.generateBusName();
+			
 			busDetailsRepo.save(busDetails);
 			return new ResponseEntity<BusDetails>(busDetails,HttpStatus.ACCEPTED);
-		}else
-			return new ResponseEntity<String>("Error creating bus details", HttpStatus.BAD_REQUEST);
-	}
-	
-	/*
-	@PostMapping("/{id}")
-	public String update(@PathVariable int id, BusDetails busDetails,Model model, Principal principal, RedirectAttributes redirectAttributes) {
-		basicUtil.addNavBarAttributesToModel(principal, model);
-		
-		Optional<User> user = basicUtil.getUser(principal);
-		Optional<BusDetails> existingBusDetails = busDetailsRepo.findById(id);
-		
-		if(user.isPresent() && user.get().getRole().equals("ROLE_OPERATOR") && existingBusDetails.isPresent() && existingBusDetails.get().getOperator().getOperator().equals(user.get().getOperator())) {
-			busDetails.setId(id);
-			busDetails.setOperator(user.get());
-			busDetails.generateBusName();
-			busDetailsRepo.save(busDetails);
-			basicUtil.addMsgToRedirectFlash(busDetails.getBusName() + " updated successfully!", "success", "show", redirectAttributes);
+		}catch(SeatingTypeNotFound e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
 		}
 		
-		return "redirect:/bus_details/";
+			
+//		}else
+//			return new ResponseEntity<String>("Error creating bus details", HttpStatus.BAD_REQUEST);
 	}
 	
-	*/
+	
+	@PutMapping("edit/{id}")
+	public ResponseEntity<?> update(@PathVariable int id, @RequestBody BusDetailsRequest busDetailsRequest, Principal principal) {
+		try {
+
+			Optional<User> user = basicUtil.getUser(principal);
+			Optional<BusDetails> existingBusDetails = busDetailsRepo.findById(id);
+			existingBusDetails.orElseThrow(() -> new BusDetailsNotFoundException("Couldn't find Bus details with id " + id));
+			
+			Optional<SeatingType> seatingType = seatingTypeRepo.findBySeating(busDetailsRequest.getSeatingType());
+			seatingType.orElseThrow(() -> new SeatingTypeNotFound(busDetailsRequest.getSeatingType() +  "  seating type not found"));
+			
+			BusDetails busDetails = busDetailsRequest.updateBusDetailsInstance(existingBusDetails.get() ,seatingType.get());
+			
+			busDetails.generateBusName();
+			busDetailsRepo.save(busDetails);
+			return new ResponseEntity<BusDetails>(busDetails,HttpStatus.ACCEPTED);
+		}catch(BusDetailsNotFoundException e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(SeatingTypeNotFound e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}
+		
+//		if(user.isPresent() && user.get().getRole().equals("ROLE_OPERATOR") && existingBusDetails.isPresent() && existingBusDetails.get().getOperator().getOperator().equals(user.get().getOperator())) {
+//			busDetails.setId(id);
+//			busDetails.setOperator(user.get());
+//			busDetails.generateBusName();
+//			busDetailsRepo.save(busDetails);
+//		}
+		
+//		return "redirect:/bus_details/";
+	}
+	
+	
 }
