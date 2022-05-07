@@ -95,4 +95,16 @@ public class ScheduleRequest {
 		
 		return schedule;
 	}
+
+	public Schedule getUpdatedScheduleInstance(Schedule schedule, BasicUtil basicUtil) throws ParseException {
+
+		schedule.setBasePrice(basePrice);
+		schedule.setWeekDay(weekDay);
+		schedule.setDuration(Integer.parseInt(duration.split(":")[0])*60 + Integer.parseInt(duration.split(":")[1]));
+		schedule.setDepartureTime(basicUtil.parseStringToSqlTime(departureTime));
+		schedule.setDepartureDate(departureDate != null ? Date.valueOf(departureDate) : null);
+		schedule.setArrivalDate(arrivalDate != null ? Date.valueOf(arrivalDate) : null);
+		
+		return schedule;
+	}
 }
