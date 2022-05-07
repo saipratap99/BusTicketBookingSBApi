@@ -82,7 +82,7 @@ public class JwtRequestFilter extends OncePerRequestFilter{
 			}
 			
 		}catch(ExpiredJwtException e) {
-			e.printStackTrace();
+			e.printStackTrace();	
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
