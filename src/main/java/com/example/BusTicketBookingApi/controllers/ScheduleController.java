@@ -83,7 +83,7 @@ public class ScheduleController {
 	}
 	
 	@PostMapping("/create")
-	public ResponseEntity<?> create(@RequestBody ScheduleRequest scheduleRequest, Principal principal) throws ParseException {
+	public ResponseEntity<?> create(@RequestBody ScheduleRequest scheduleRequest, Principal principal) {
 		
 		try {
 			Optional<User> user = basicUtil.getUser(principal);
