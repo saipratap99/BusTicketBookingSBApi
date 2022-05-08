@@ -16,6 +16,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,14 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.BusTicketBookingApi.daos.BookedSeatsRepo;
 import com.example.BusTicketBookingApi.daos.BusDetailsRepo;
 import com.example.BusTicketBookingApi.daos.ScheduleRepo;
+import com.example.BusTicketBookingApi.daos.SeatingTypeRepo;
 import com.example.BusTicketBookingApi.daos.SeatsRepo;
 import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleNotFoundException;
 import com.example.BusTicketBookingApi.models.BookedSeat;
 import com.example.BusTicketBookingApi.models.BusDetails;
+import com.example.BusTicketBookingApi.models.NewSeatRequest;
+import com.example.BusTicketBookingApi.models.NewSeatingLayoutRequest;
 import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.Seat;
 import com.example.BusTicketBookingApi.models.SeatResponse;
+import com.example.BusTicketBookingApi.models.SeatingType;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 @RestController
@@ -48,6 +53,9 @@ public class SeatsController {
 	
 	@Autowired
 	BasicUtil basicUtil;
+	
+	@Autowired
+	SeatingTypeRepo seatingTypeRepo;
 	
 	@Autowired
 	BookedSeatsRepo bookedSeatsRepo;
@@ -99,5 +107,22 @@ public class SeatsController {
 		
 		return new ResponseEntity<String>("{\"msg\": \"Error fetching seats\"}" , HttpStatus.BAD_REQUEST);
 		
+	}
+	
+	@PostMapping("/new")
+	public ResponseEntity<?> createNewSeatingLayout(@RequestBody NewSeatingLayoutRequest newSeatingLayoutRequest){
+		try {
+
+			SeatingType seatingType = newSeatingLayoutRequest.getSeatingTypeInstance();
+			seatingTypeRepo.save(seatingType);
+			
+			for(NewSeatRequest seat: newSeatingLayoutRequest.getSeats()) 
+				seatsRepo.save(seat.getSeatInstance(seatingType));
+			
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Layout added for seating " + newSeatingLayoutRequest.getSeatingType()) + "}" , HttpStatus.OK);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+		}
 	}
 }

@@ -193,7 +193,7 @@ public class UsersController {
 			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse(jwt),HttpStatus.ACCEPTED);
 			
 		}catch(BadCredentialsException e) {
-			return new ResponseEntity<String>("Invalid Email or Password", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Invalid Email or Password")	 + "}" , HttpStatus.BAD_REQUEST);
 		}
 		
 	}
