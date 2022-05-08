@@ -116,8 +116,11 @@ public class SeatsController {
 			SeatingType seatingType = newSeatingLayoutRequest.getSeatingTypeInstance();
 			seatingTypeRepo.save(seatingType);
 			
-			for(NewSeatRequest seat: newSeatingLayoutRequest.getSeats()) 
-				seatsRepo.save(seat.getSeatInstance(seatingType));
+			for(NewSeatRequest seat: newSeatingLayoutRequest.getSeats()) {
+				Seat seatInst = seat.getSeatInstance(seatingType);
+				if(!(seatInst.getSeatName().isEmpty() || seat.getSeatName().isBlank()))
+					seatsRepo.save(seatInst);
+			}
 			
 			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Layout added for seating " + newSeatingLayoutRequest.getSeatingType()) + "}" , HttpStatus.OK);
 		}catch(Exception e) {
