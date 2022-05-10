@@ -22,12 +22,6 @@ public class LocationsController {
 	
 	@GetMapping("/")
 	public ResponseEntity<?> getAllLocations(){
-		try {
-			return new ResponseEntity<>(locationRepo.findAll(), HttpStatus.ACCEPTED);
-		}catch(Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", e.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
-		}
-		
+		return new ResponseEntity<>(locationRepo.findAll(), HttpStatus.ACCEPTED);
 	}
 }
