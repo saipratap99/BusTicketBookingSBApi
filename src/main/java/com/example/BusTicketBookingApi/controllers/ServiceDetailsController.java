@@ -32,8 +32,8 @@ import com.example.BusTicketBookingApi.exceptions.LocationNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.ServiceDetailsNotFoundException;
 import com.example.BusTicketBookingApi.models.Location;
 import com.example.BusTicketBookingApi.models.ServiceDetails;
-import com.example.BusTicketBookingApi.models.ServiceDetailsRequest;
 import com.example.BusTicketBookingApi.models.User;
+import com.example.BusTicketBookingApi.models.requests.ServiceDetailsRequest;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 

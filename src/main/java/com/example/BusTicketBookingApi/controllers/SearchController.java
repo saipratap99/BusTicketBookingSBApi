@@ -45,7 +45,7 @@ public class SearchController {
 	
 	@GetMapping("/buses/{depLocation}/{depId}/{arrLocation}/{arrId}/{date}")
 	public ResponseEntity<?> availableBuses(@PathVariable String depLocation,@PathVariable int depId,@PathVariable String arrLocation,@PathVariable int arrId,@PathVariable Date date, Model model, Principal principal) {
-		
+
 		List<ServiceDetails> serviceDetails = null;
 		List<Schedule> schedules = new LinkedList<>();
 		

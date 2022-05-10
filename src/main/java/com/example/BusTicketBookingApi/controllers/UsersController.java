@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties.Lettuce.Cluster.Refresh;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,13 +40,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.BusTicketBookingApi.daos.UserRepo;
 import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
-import com.example.BusTicketBookingApi.models.AuthenticationRequest;
-import com.example.BusTicketBookingApi.models.AuthenticationResponse;
 import com.example.BusTicketBookingApi.models.User;
+import com.example.BusTicketBookingApi.models.requests.AuthenticationRequest;
+import com.example.BusTicketBookingApi.models.requests.RefreshTokenRequest;
+import com.example.BusTicketBookingApi.models.responses.AuthenticationResponse;
 import com.example.BusTicketBookingApi.services.UserService;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 import com.example.BusTicketBookingApi.utils.JwtUtil;
 import com.example.BusTicketBookingApi.utils.PropertiesUtil;
+import com.example.BusTicketBookingApi.utils.RefreshJwtUtil;
+
+import io.jsonwebtoken.ExpiredJwtException;
 
 @RestController
 @RequestMapping(value = "/api/v1/users")
@@ -68,6 +73,9 @@ public class UsersController {
 	
 	@Autowired
 	JwtUtil jwtUtil;
+	
+	@Autowired
+	RefreshJwtUtil refreshJwtUtil;
 	
 	@Autowired
 	BasicUtil basicUtil;
@@ -146,14 +154,14 @@ public class UsersController {
 		if(result.hasErrors()) {
 			for(FieldError error: result.getFieldErrors()) 
 				msg += error.getField() + ": " + error.getDefaultMessage() + "<br>";
-			responseEntity = new ResponseEntity<String>(msg,HttpStatus.BAD_REQUEST);
+			responseEntity = new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", msg)+ "}", HttpStatus.BAD_REQUEST);
 		
 		}else {
 			if(userRepo.findByEmail(user.getEmail()) != null)
-				responseEntity = new ResponseEntity<String>("Email already exsits",HttpStatus.BAD_REQUEST);
+				responseEntity = new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Email already exsits") + "}", HttpStatus.BAD_REQUEST);
 		
 			else if(!user.getPassword().equals(user.getConfirmPassword()))
-				responseEntity = new ResponseEntity<String>("Password must be same",HttpStatus.BAD_REQUEST);
+				responseEntity = new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Password must be same") + "}", HttpStatus.BAD_REQUEST);
 			
 			else {
 				user.setRole("ROLE_USER");
@@ -168,6 +176,7 @@ public class UsersController {
 	public <T> ResponseEntity<?> authenticate(@RequestBody AuthenticationRequest authenticationRequest,
 									HttpServletResponse resp, HttpServletRequest request) throws UsernameNotFoundException {
 		String jwt = "";
+		String jwtRefreshToken = "";
 		try {
 			// authenticate if credentials are matching
 			authenticationManager.authenticate(
@@ -177,8 +186,10 @@ public class UsersController {
 			// if matched gets the UserDetails object 
 			UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
 			
-			if(propertiesUtil.isJWTBasedAuth())
+			if(propertiesUtil.isJWTBasedAuth()) {
 				jwt = generateJWTAccessToken(userDetails, resp);
+				jwtRefreshToken = generateJWTRefreshToken(userDetails, resp);
+			}
 			
 
 			UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
@@ -187,10 +198,11 @@ public class UsersController {
 					userDetails.getAuthorities()
 			);
 			
+			
 			usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 			SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 			
-			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse(jwt),HttpStatus.ACCEPTED);
+			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse(jwt, jwtRefreshToken),HttpStatus.ACCEPTED);
 			
 		}catch(BadCredentialsException e) {
 			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Invalid Email or Password")	 + "}" , HttpStatus.BAD_REQUEST);
@@ -198,10 +210,42 @@ public class UsersController {
 		
 	}
 	
+	
+	@PostMapping("/auth/refresh-token/{refreshToken}")
+	private ResponseEntity<?> generateNewAccessToken(@PathVariable String refreshToken, HttpServletResponse response){
+		try {
+		   	
+			System.out.println(refreshToken);
+			String jwtAccessToken = "";
+			String userName = refreshJwtUtil.extractUsername(refreshToken);
+			UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
+			refreshJwtUtil.validateToken(refreshToken, userDetails);
+			jwtAccessToken = generateJWTAccessToken(userDetails, response);
+
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("accessToken", jwtAccessToken) + ", " + basicUtil.getJSONString("refreshToken", refreshToken) + "}" , HttpStatus.BAD_REQUEST);
+		}catch(ExpiredJwtException e) {
+			System.out.println("Expired");
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Session Expired. Please Login agian!") + "}" , HttpStatus.UNAUTHORIZED);
+		}catch(Exception e) {
+			System.out.println("Exception");
+			e.printStackTrace();
+			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Please Login agian!") + "}" , HttpStatus.UNAUTHORIZED);
+		}
+	}
+	
+	
+	
 	public String generateJWTAccessToken(UserDetails userDetails, HttpServletResponse response) {
 		String jwt = jwtUtil.generateToken(userDetails);
 		response.addHeader("Authorization", "Bearer " + jwt);
 		return jwt;
 	}
+	
+	public String generateJWTRefreshToken(UserDetails userDetails, HttpServletResponse response) {
+		String jwtRefreshToken = refreshJwtUtil.generateToken(userDetails);
+		return jwtRefreshToken;
+	}
+
 
 }

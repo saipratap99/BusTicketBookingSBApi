@@ -30,12 +30,12 @@ import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleNotFoundException;
 import com.example.BusTicketBookingApi.models.BookedSeat;
 import com.example.BusTicketBookingApi.models.BusDetails;
-import com.example.BusTicketBookingApi.models.NewSeatRequest;
-import com.example.BusTicketBookingApi.models.NewSeatingLayoutRequest;
 import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.Seat;
-import com.example.BusTicketBookingApi.models.SeatResponse;
 import com.example.BusTicketBookingApi.models.SeatingType;
+import com.example.BusTicketBookingApi.models.requests.NewSeatRequest;
+import com.example.BusTicketBookingApi.models.requests.NewSeatingLayoutRequest;
+import com.example.BusTicketBookingApi.models.responses.SeatResponse;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 @RestController

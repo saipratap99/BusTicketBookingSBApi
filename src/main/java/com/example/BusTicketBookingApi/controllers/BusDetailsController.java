@@ -35,9 +35,9 @@ import com.example.BusTicketBookingApi.daos.UserRepo;
 import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.SeatingTypeNotFound;
 import com.example.BusTicketBookingApi.models.BusDetails;
-import com.example.BusTicketBookingApi.models.BusDetailsRequest;
 import com.example.BusTicketBookingApi.models.SeatingType;
 import com.example.BusTicketBookingApi.models.User;
+import com.example.BusTicketBookingApi.models.requests.BusDetailsRequest;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 @RestController

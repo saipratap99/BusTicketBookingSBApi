@@ -1,6 +1,8 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.requests;
 
 import java.util.Optional;
+
+import com.example.BusTicketBookingApi.models.ServiceDetails;
 
 public class ServiceDetailsRequest {
 	

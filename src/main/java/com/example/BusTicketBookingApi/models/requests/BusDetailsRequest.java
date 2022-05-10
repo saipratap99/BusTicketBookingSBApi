@@ -1,4 +1,4 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.requests;
 
 import java.sql.Date;
 import java.util.Optional;
@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.example.BusTicketBookingApi.daos.SeatingTypeRepo;
+import com.example.BusTicketBookingApi.models.BusDetails;
+import com.example.BusTicketBookingApi.models.SeatingType;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 public class BusDetailsRequest {

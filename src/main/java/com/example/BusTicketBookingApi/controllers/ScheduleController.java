@@ -30,9 +30,9 @@ import com.example.BusTicketBookingApi.exceptions.ScheduleDetailsNotFoundExcepti
 import com.example.BusTicketBookingApi.exceptions.ServiceDetailsNotFoundException;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
-import com.example.BusTicketBookingApi.models.ScheduleRequest;
 import com.example.BusTicketBookingApi.models.ServiceDetails;
 import com.example.BusTicketBookingApi.models.User;
+import com.example.BusTicketBookingApi.models.requests.ScheduleRequest;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 

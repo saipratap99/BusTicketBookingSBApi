@@ -1,6 +1,8 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.requests;
 
 import java.util.List;
+
+import com.example.BusTicketBookingApi.models.SeatingType;
 
 public class NewSeatingLayoutRequest {
 	private String seatingType;

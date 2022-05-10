@@ -1,4 +1,7 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.requests;
+
+import com.example.BusTicketBookingApi.models.Seat;
+import com.example.BusTicketBookingApi.models.SeatingType;
 
 public class NewSeatRequest {
 	private int row;

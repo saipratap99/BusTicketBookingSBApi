@@ -1,8 +1,14 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.requests;
 
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+
+import com.example.BusTicketBookingApi.models.BookedSeat;
+import com.example.BusTicketBookingApi.models.BookingDetails;
+import com.example.BusTicketBookingApi.models.Schedule;
+import com.example.BusTicketBookingApi.models.Seat;
+import com.example.BusTicketBookingApi.models.User;
 
 public class NewBookingRequest {
 	

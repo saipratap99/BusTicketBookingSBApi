@@ -1,10 +1,11 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.requests;
 
 import java.sql.Date;
 import java.text.ParseException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
 public class ScheduleRequest {

@@ -1,4 +1,4 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.responses;
 
 public class SeatResponse {
 

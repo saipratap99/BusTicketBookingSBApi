@@ -1,4 +1,4 @@
-package com.example.BusTicketBookingApi.models;
+package com.example.BusTicketBookingApi.models.requests;
 
 public class AuthenticationRequest {
 	String username;

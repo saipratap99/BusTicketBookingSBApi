@@ -48,7 +48,7 @@ public class JwtRequestFilter extends OncePerRequestFilter{
 		
 	}
 	
-	public void authorizeUsingJwtFromCookieOrHeader(HttpServletRequest request, HttpServletResponse response) {
+	public void authorizeUsingJwtFromCookieOrHeader(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
 			String authorizationHeader = request.getHeader("Authorization"); 
 			String username = null;
@@ -82,7 +82,7 @@ public class JwtRequestFilter extends OncePerRequestFilter{
 			}
 			
 		}catch(ExpiredJwtException e) {
-			e.printStackTrace();	
+			e.printStackTrace();
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
