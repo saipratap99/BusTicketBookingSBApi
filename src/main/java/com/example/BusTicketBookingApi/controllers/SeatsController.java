@@ -57,11 +57,12 @@ public class SeatsController {
 	@Autowired
 	BookedSeatsRepo bookedSeatsRepo;
 	
-	@GetMapping("/schedule/{scheduleId}/bus/{busId}/{doj}/{time}")
+	@GetMapping("/schedule/{scheduleId}/bus/{busId}/{doj}/{depTime}")
 	public ResponseEntity<?> getAvailableSeats(@PathVariable int scheduleId, @PathVariable int busId,
-											   @PathVariable Date doj, @PathVariable Time time, Principal principal) 
+											   @PathVariable Date doj, @PathVariable String depTime, Principal principal) 
 											   throws BusDetailsNotFoundException, ScheduleNotFoundException{
 		
+		Time time = Time.valueOf(depTime.replaceAll("-", ":"));
 		
 		Optional<Schedule> schedule = scheduleRepo.findById(scheduleId);
 		Optional<BusDetails> busDetails = busDetailsRepo.findById(busId);
@@ -106,7 +107,7 @@ public class SeatsController {
 		
 		for(NewSeatRequest seat: newSeatingLayoutRequest.getSeats()) {
 			Seat seatInst = seat.getSeatInstance(seatingType);
-			if(!(seatInst.getSeatName().isEmpty() || seat.getSeatName().isBlank()))
+			if(!(seatInst.getSeatName().isEmpty()))
 				seatsRepo.save(seatInst);
 		}
 		

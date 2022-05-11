@@ -71,7 +71,7 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 			.antMatchers("/api/*/admin/**").hasRole("ADMIN")
 			.antMatchers("/api/*/bus_details/**", "/api/*/schedule/**", "/api/*/service_details/**").hasAnyRole("ADMIN", "OPERATOR")
 			.antMatchers("/api/*/bookings/**").hasAnyRole("ADMIN", "OPERATOR","USER")
-			.antMatchers("/api/*/authenticate","/api/*/users/*", "/api/*/users/auth/refresh-token/*").permitAll()
+			.antMatchers("/api/*/authenticate","/api/*/users/*", "/api/*/users/auth/refresh-token/*", "/api/*/search/**", "/api/*/seats/schedule/**").permitAll()
 			.anyRequest()
 			.authenticated();
 		
