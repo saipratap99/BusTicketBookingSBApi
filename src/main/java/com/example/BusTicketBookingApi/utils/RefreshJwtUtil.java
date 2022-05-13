@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,10 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Service
 public class RefreshJwtUtil {
+	
+	@Autowired
+	JwtUtil jwtUtil;
+	
 	private String SECRET_KEY = "refresh_token_secret";
 
     public String extractUsername(String token) {
@@ -41,11 +46,15 @@ public class RefreshJwtUtil {
         claims.put("role", userDetails.getAuthorities().iterator().next().getAuthority());
         return createToken(claims, userDetails.getUsername());
     }
+    
+    public String reGenerateAccessToken(UserDetails userDetails) {
+    	return jwtUtil.generateToken(userDetails);
+    }
 
     private String createToken(Map<String, Object> claims, String subject) {
 
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) 
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
     }
 

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -173,7 +174,13 @@ public class UsersController {
 				jwtRefreshToken = generateJWTRefreshToken(userDetails, resp);
 			}
 			
-
+			Cookie refreshCookie = new Cookie("refreshToken", jwtRefreshToken);
+			refreshCookie.setHttpOnly(true);
+			refreshCookie.setPath("/");
+			
+			resp.addCookie(refreshCookie);
+			
+			
 			UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
 					userDetails,
 					null,

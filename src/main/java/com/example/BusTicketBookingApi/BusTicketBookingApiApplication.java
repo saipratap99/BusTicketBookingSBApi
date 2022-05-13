@@ -22,7 +22,7 @@ public class BusTicketBookingApiApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins("*").allowedMethods("*").exposedHeaders("*").allowedHeaders("*");
+				registry.addMapping("/**").allowedOrigins("http://localhost:4200").allowedMethods("*").exposedHeaders("*").allowedHeaders("*").allowCredentials(true);
 			}
 		};
 	}
