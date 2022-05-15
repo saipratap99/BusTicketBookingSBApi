@@ -40,6 +40,7 @@ import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
 import com.example.BusTicketBookingApi.models.User;
 import com.example.BusTicketBookingApi.models.requests.AuthenticationRequest;
 import com.example.BusTicketBookingApi.models.responses.AuthenticationResponse;
+import com.example.BusTicketBookingApi.services.EmailSenderService;
 import com.example.BusTicketBookingApi.services.UserService;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 import com.example.BusTicketBookingApi.utils.JwtUtil;
@@ -75,6 +76,9 @@ public class UsersController {
 	
 	@Autowired
 	BasicUtil basicUtil;
+	
+	@Autowired
+	EmailSenderService emailService;
 	
 	@PostMapping("/{id}/alter-role")
 	public ResponseEntity<?> makeOperator(@PathVariable int id,@RequestParam String operatorName, Principal principal) throws Exception {
@@ -134,21 +138,28 @@ public class UsersController {
 		String msg = "";
 		ResponseEntity<?> responseEntity = null;
 		
+		System.out.println("CREATE");
 		if(result.hasErrors()) {
 			for(FieldError error: result.getFieldErrors()) 
 				msg += error.getField() + ": " + error.getDefaultMessage() + "<br>";
 			responseEntity = new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", msg)+ "}", HttpStatus.BAD_REQUEST);
 		
 		}else {
-			if(userRepo.findByEmail(user.getEmail()) != null)
+			User existingUser = userRepo.findByEmail(user.getEmail());
+			if(existingUser != null && existingUser.isActivated())
 				responseEntity = new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Email already exsits") + "}", HttpStatus.BAD_REQUEST);
-		
+			
 			else if(!user.getPassword().equals(user.getConfirmPassword()))
 				responseEntity = new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Password must be same") + "}", HttpStatus.BAD_REQUEST);
 			
 			else {
+				if(existingUser != null && !existingUser.isActivated())
+					user.setId(existingUser.getId());
+				
 				user.setRole("ROLE_USER");
+				user.setOTP(basicUtil.generateFourDigitOTP());
 				userService.save(user);
+				emailService.sendSignUpMail(user);
 				responseEntity = new ResponseEntity<User>(user,HttpStatus.ACCEPTED);
 			}
 		}
@@ -197,6 +208,19 @@ public class UsersController {
 			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Invalid Email or Password")	 + "}" , HttpStatus.BAD_REQUEST);
 		}
 		
+	}
+	
+	@PostMapping("{id}/verify/otp/{otp}")
+	public ResponseEntity<?> verifyOTP(@PathVariable int id, @PathVariable int otp) throws UserNotFoundException, IncorrectOTPException{
+		Optional<User> user = userRepo.findById(id);
+		user.orElseThrow(() -> new UserNotFoundException("User not found with id " + id));
+		if(otp == user.get().getOTP()) {
+			user.get().setActivated(true);
+			userRepo.save(user.get());
+		}else
+			throw new IncorrectOTPException("Incorrect OTP. Please try again.");
+		
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "OTP Verified")	 + "}" , HttpStatus.OK);
 	}
 	
 	

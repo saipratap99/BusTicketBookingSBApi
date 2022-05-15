@@ -3,6 +3,7 @@ package com.example.BusTicketBookingApi.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
@@ -67,6 +68,11 @@ public class RestResponseEntityExceptionHandler {
 	@ExceptionHandler(value = InvalidWeekDayException.class)
 	public ResponseEntity<?> invalidWeekDayException(InvalidWeekDayException exception){
 		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", exception.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(value = DisabledException.class)
+	public ResponseEntity<?> disabledException(DisabledException exception){
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Please activate your account by signing up again!") + "}" , HttpStatus.BAD_REQUEST);
 	}
 	
 	

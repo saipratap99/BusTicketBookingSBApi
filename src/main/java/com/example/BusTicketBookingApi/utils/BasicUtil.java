@@ -90,4 +90,8 @@ public class BasicUtil {
 		return t1.getTime() == t2.getTime();
 	}
 	
+	public int generateFourDigitOTP() {
+		return (int)(Math.random()* 10000);
+	}
+	
 }
