@@ -105,6 +105,14 @@ public class UsersController {
 		
 	}
 	
+	@GetMapping("/{id}/email")
+	public ResponseEntity<?> getEmail(@PathVariable int id) throws UserNotFoundException{
+		Optional<User> user = userRepo.findById(id);
+		user.orElseThrow(() -> new UserNotFoundException("User not found with id " + id));
+		
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("email", user.get().getEmail())	 + "}" , HttpStatus.OK); 
+	}
+	
 	@GetMapping("/")
 	public ResponseEntity<?> getAllUsers(Principal principal) throws Exception{
 		 Optional<User> currUser = basicUtil.getUser(principal);
@@ -222,6 +230,17 @@ public class UsersController {
 		
 		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "OTP Verified")	 + "}" , HttpStatus.OK);
 	}
+	
+	@PostMapping("{id}/resend/otp")
+	public ResponseEntity<?> resendOTP(@PathVariable int id) throws UserNotFoundException{
+		Optional<User> user = userRepo.findById(id);
+		user.orElseThrow(() -> new UserNotFoundException("User not found with id " + id));
+		
+		emailService.sendSignUpMail(user.get());
+		
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "OTP was resent.") + "}" , HttpStatus.OK);
+	}
+		
 	
 	
 	@PostMapping("/auth/refresh-token/{refreshToken}")
