@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.example.BusTicketBookingApi.filters.JwtRequestFilter;
 import com.example.BusTicketBookingApi.utils.PropertiesUtil;
@@ -64,7 +65,7 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 			.antMatchers("/api/*/admin/**").hasRole("ADMIN")
 			.antMatchers("/api/*/bus_details/**", "/api/*/schedule/**", "/api/*/service_details/**").hasAnyRole("ADMIN", "OPERATOR")
 			.antMatchers("/api/*/bookings/**").hasAnyRole("ADMIN", "OPERATOR")
-			.antMatchers("/api/*/authenticate","/api/*/users/create", "/api/*/users/login", "/api/*/users/*/verify/otp/*", "/api/*/users/*/email", "/api/*/users/*/resend/otp", "/api/*/users/auth/refresh-token/*", "/api/*/search/**", "/api/*/seats/schedule/**").permitAll()
+			.antMatchers("/api/*/authenticate","/api/*/users/create", "/api/*/users/logout", "/api/*/users/login", "/api/*/users/*/verify/otp/*", "/api/*/users/*/email", "/api/*/users/*/resend/otp", "/api/*/users/auth/refresh-token/*", "/api/*/search/**", "/api/*/seats/schedule/**").permitAll()
 			.anyRequest()
 			.authenticated();
 		
@@ -83,20 +84,16 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 //		if(propertiesUtil.isSessionsBasedAuth())
 //			http.addFilterBefore(sessionRequestFilter, UsernamePasswordAuthenticationFilter.class);
 		
-		/*
-		http.exceptionHandling().authenticationEntryPoint((request, response, authException)->{	
-			response.sendRedirect("/users/login?msg=Please+login&status=danger&show=show");
-		});
 		
 		
 		
 		http
 		.logout()
-			.logoutRequestMatcher(new AntPathRequestMatcher("/users/logout", "POST"))
+			.logoutRequestMatcher(new AntPathRequestMatcher("/api/v1/users/logout", "POST"))
 			.clearAuthentication(true)
-			.deleteCookies("jwt","SESSION")
-			.logoutSuccessUrl("/users/login?msg=User+logged+out&status=success&show=show");
-		*/
+			.deleteCookies("refreshToken")
+			.logoutSuccessUrl("/api/v1/users/logout");
+
 	}
 	
 	@Bean

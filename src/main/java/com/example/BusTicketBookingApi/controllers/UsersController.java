@@ -1,6 +1,7 @@
 package com.example.BusTicketBookingApi.controllers;
 
 import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -231,14 +233,14 @@ public class UsersController {
 		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "OTP Verified")	 + "}" , HttpStatus.OK);
 	}
 	
-	@PostMapping("{id}/resend/otp")
+	@GetMapping("{id}/resend/otp")
 	public ResponseEntity<?> resendOTP(@PathVariable int id) throws UserNotFoundException{
 		Optional<User> user = userRepo.findById(id);
 		user.orElseThrow(() -> new UserNotFoundException("User not found with id " + id));
 		
 		emailService.sendSignUpMail(user.get());
 		
-		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "OTP was resent.") + "}" , HttpStatus.OK);
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "OTP sent successfully.") + "}" , HttpStatus.OK);
 	}
 		
 	
@@ -279,5 +281,10 @@ public class UsersController {
 		return jwtRefreshToken;
 	}
 
+	@GetMapping("/logout")
+	public ResponseEntity<?> logOut(){
+		
+		return new ResponseEntity<>("{" + basicUtil.getJSONString("msg", "Logged out successfully") + "}", HttpStatus.OK);
+	}
 
 }
