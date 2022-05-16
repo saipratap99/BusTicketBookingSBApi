@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -122,6 +123,14 @@ public class BusDetailsController {
 		busDetailsRepo.save(busDetails);
 		return new ResponseEntity<BusDetails>(busDetails,HttpStatus.ACCEPTED);
 
+	}
+	
+	@DeleteMapping("{id}")
+	public ResponseEntity<?> delete(@PathVariable int id) throws BusDetailsNotFoundException{
+		Optional<BusDetails> existingBusDetails = busDetailsRepo.findById(id);
+		existingBusDetails.orElseThrow(() -> new BusDetailsNotFoundException("Couldn't find Bus details with id " + id));
+		
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", (existingBusDetails.get().getBusName() + " deleted successfully")) + "}" , HttpStatus.OK);
 	}
 	
 	

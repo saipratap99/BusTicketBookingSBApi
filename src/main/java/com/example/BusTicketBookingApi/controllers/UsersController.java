@@ -1,7 +1,6 @@
 package com.example.BusTicketBookingApi.controllers;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -283,7 +281,6 @@ public class UsersController {
 
 	@GetMapping("/logout")
 	public ResponseEntity<?> logOut(){
-		
 		return new ResponseEntity<>("{" + basicUtil.getJSONString("msg", "Logged out successfully") + "}", HttpStatus.OK);
 	}
 
