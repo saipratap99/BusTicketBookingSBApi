@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -52,6 +53,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 @RestController
 @RequestMapping(value = "/api/v1/users")
 public class UsersController {
+	
+	@Value("${app.cookie.domain}")
+	private String cookieDomain;
 	
 	@Autowired
 	UserRepo userRepo;
