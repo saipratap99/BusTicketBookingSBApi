@@ -200,6 +200,7 @@ public class UsersController {
 			Cookie refreshCookie = new Cookie("refreshToken", jwtRefreshToken);
 			refreshCookie.setHttpOnly(true);
 			refreshCookie.setPath("/");
+			refreshCookie.setSecure(true);	
 			
 			resp.addCookie(refreshCookie);
 			

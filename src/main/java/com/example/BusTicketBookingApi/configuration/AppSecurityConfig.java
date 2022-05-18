@@ -18,9 +18,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.example.BusTicketBookingApi.filters.JwtRequestFilter;
 import com.example.BusTicketBookingApi.utils.PropertiesUtil;
 
-
-
-
 @Configuration
 @EnableWebSecurity
 public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
