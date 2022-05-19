@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.BusTicketBookingApi.daos.UserRepo;
+import com.example.BusTicketBookingApi.exceptions.IncorrectOTPException;
 import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
 import com.example.BusTicketBookingApi.models.User;
 import com.example.BusTicketBookingApi.models.requests.AuthenticationRequest;

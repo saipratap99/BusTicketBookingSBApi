@@ -1,4 +1,4 @@
-package com.example.BusTicketBookingApi.controllers;
+package com.example.BusTicketBookingApi.exceptions;
 
 public class IncorrectOTPException extends Exception {
 

@@ -12,6 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.BusTicketBookingApi.daos.UserRepo;
+import com.example.BusTicketBookingApi.models.BusDetails;
+import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.User;
 
 
@@ -92,6 +94,22 @@ public class BasicUtil {
 	
 	public int generateFourDigitOTP() {
 		return (int)(Math.random()* 10000);
+	}
+	
+	public boolean isAdmin(User user) {
+		return "ROLE_ADMIN".equalsIgnoreCase(user.getRole());
+	}
+	
+	public boolean isOperator(User user) {
+		return "ROLE_OPERATOR".equalsIgnoreCase(user.getRole());
+	}
+	
+	public boolean isBusBelongsToOperator(BusDetails busDetails, User operator) {
+		return operator.getOperator().equalsIgnoreCase(busDetails.getOperator().getOperator());
+	}
+
+	public boolean isScheduleBelongsToOperator(Schedule schedule, User operator) {
+		return operator.getOperator().equalsIgnoreCase(schedule.getBusDetails().getOperator().getOperator());
 	}
 	
 }

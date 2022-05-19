@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +28,7 @@ import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
 import com.example.BusTicketBookingApi.daos.UserRepo;
 import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.SeatingTypeNotFound;
+import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.SeatingType;
 import com.example.BusTicketBookingApi.models.User;
@@ -56,7 +58,10 @@ public class BusDetailsController {
 	BasicUtil basicUtil;
 	
 	@GetMapping("/")
-	public ResponseEntity<?> getBuses(Model model, Principal principal) {
+	public ResponseEntity<?> getBuses(Model model, Principal principal) throws UserNotFoundException {
+		
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
 		
 		List<Map<String, String>> busesMap = new LinkedList<>();
 		List<BusDetails> busDetails = busDetailsRepo.findAll();
@@ -74,7 +79,11 @@ public class BusDetailsController {
 			busMap.put("lastMaintance", busDetail.getLastMaintance().toString());
 			busMap.put("onService", busDetail.getOnService().toString());
 			
-			busesMap.add(busMap);
+			if(basicUtil.isAdmin(user.get()))
+				busesMap.add(busMap);
+			else if(basicUtil.isOperator(user.get()) && basicUtil.isBusBelongsToOperator(busDetail, user.get()))
+				busesMap.add(busMap);
+			
 		}
 		
 		return new ResponseEntity<>(busesMap, HttpStatus.ACCEPTED);
@@ -109,10 +118,17 @@ public class BusDetailsController {
 	
 	@PutMapping("edit/{id}")
 	public ResponseEntity<?> update(@PathVariable int id, @RequestBody BusDetailsRequest busDetailsRequest, 
-									Principal principal) throws BusDetailsNotFoundException, SeatingTypeNotFound {
-
+									Principal principal) throws BusDetailsNotFoundException, SeatingTypeNotFound, UserNotFoundException {
+			
+		
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
+		
 		Optional<BusDetails> existingBusDetails = busDetailsRepo.findById(id);
 		existingBusDetails.orElseThrow(() -> new BusDetailsNotFoundException("Couldn't find Bus details with id " + id));
+		
+		if(basicUtil.isOperator(user.get()) && !basicUtil.isBusBelongsToOperator(existingBusDetails.get(),user.get()))
+			throw new AccessDeniedException("Access denied");
 		
 		Optional<SeatingType> seatingType = seatingTypeRepo.findBySeating(busDetailsRequest.getSeatingType());
 		seatingType.orElseThrow(() -> new SeatingTypeNotFound(busDetailsRequest.getSeatingType() +  "  seating type not found"));

@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,9 +29,11 @@ import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.InvalidWeekDayException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.ServiceDetailsNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.ServiceDetails;
+import com.example.BusTicketBookingApi.models.User;
 import com.example.BusTicketBookingApi.models.requests.ScheduleRequest;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
@@ -56,9 +59,14 @@ public class ScheduleController {
 
 	
 	@GetMapping("/")
-	public ResponseEntity<?> getSchedules(Principal principal) {
+	public ResponseEntity<?> getSchedules(Principal principal) throws UserNotFoundException {
+		
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
+		
 		List<Schedule> schedules = scheduleRepo.findAll();
 		List<Map<String, String>> schedulesMap = new LinkedList<>();
+		
 		for(Schedule schedule: schedules) {
 			Map<String, String> scheduleMap = new LinkedHashMap<>();
 			
@@ -71,7 +79,11 @@ public class ScheduleController {
 			scheduleMap.put("duration", String.valueOf(schedule.getDuration()));
 			scheduleMap.put("basePrice", String.valueOf(schedule.getBasePrice()));
 			
-			schedulesMap.add(scheduleMap);
+			if(basicUtil.isAdmin(user.get()))
+				schedulesMap.add(scheduleMap);
+			else if(basicUtil.isOperator(user.get()) && basicUtil.isScheduleBelongsToOperator(schedule, user.get()))
+				schedulesMap.add(scheduleMap);
+				
 		}
 		
 		return new ResponseEntity<>(schedulesMap, HttpStatus.ACCEPTED);
@@ -115,10 +127,15 @@ public class ScheduleController {
 	public ResponseEntity<?> updateSchedule(@PathVariable int id, @RequestBody ScheduleRequest scheduleRequest, 
 											Principal principal) throws ScheduleDetailsNotFoundException, 
 											ServiceDetailsNotFoundException, BusDetailsNotFoundException, 
-											InvalidWeekDayException, ParseException  {
+											InvalidWeekDayException, ParseException, UserNotFoundException  {
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
 		
 		Optional<Schedule> exsitingSchedule = scheduleRepo.findById(id);
 		exsitingSchedule.orElseThrow(() -> new ScheduleDetailsNotFoundException("Schedule details with id " + id + " not found"));
+		
+		if(basicUtil.isOperator(user.get()) && !basicUtil.isScheduleBelongsToOperator(exsitingSchedule.get(),user.get()))
+			throw new AccessDeniedException("Access denied");
 		
 		Optional<ServiceDetails> serviceDetails = serviceDetailsRepo.findByServiceName(scheduleRequest.getServiceName());
 		Optional<BusDetails> busDetails = busDetailsRepo.findById(scheduleRequest.getBusId());
