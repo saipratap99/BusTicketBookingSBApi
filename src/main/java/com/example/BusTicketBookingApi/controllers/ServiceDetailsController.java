@@ -10,7 +10,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,12 +22,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.BusTicketBookingApi.daos.LocationRepo;
+import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
 import com.example.BusTicketBookingApi.daos.UserRepo;
+import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.LocationNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.ServiceDetailsNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
+import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.Location;
+import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.ServiceDetails;
+import com.example.BusTicketBookingApi.models.User;
 import com.example.BusTicketBookingApi.models.requests.ServiceDetailsRequest;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
 
@@ -47,6 +55,9 @@ public class ServiceDetailsController {
 	@Autowired
 	BasicUtil basicUtil;
 	
+	@Autowired
+	ScheduleRepo scheduleRepo;
+	
 	@GetMapping("/")
 	public ResponseEntity<?> index(Model model, Principal principal) {
 		List<Map<String, String>> servicesMap = new LinkedList<>();
@@ -63,7 +74,8 @@ public class ServiceDetailsController {
 			serviceMap.put("arrivalLocation", serviceDetail.getArrivalLocation().getLocationName());
 			serviceMap.put("distance", String.valueOf(serviceDetail.getDistance()));
 			
-			servicesMap.add(serviceMap);
+			if(!serviceDetail.isDeleted())
+				servicesMap.add(serviceMap);
 		}
 		return new ResponseEntity<>(servicesMap, HttpStatus.ACCEPTED);
 	
@@ -121,5 +133,22 @@ public class ServiceDetailsController {
 		return new ResponseEntity<ServiceDetails>(serviceDetail, HttpStatus.OK);
 	
 	}
+	
+	@DeleteMapping("{id}")
+	public ResponseEntity<?> delete(@PathVariable int id, Principal principal) throws UserNotFoundException, ServiceDetailsNotFoundException {
+		
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
+		
+		Optional<ServiceDetails> serviceDetails = serviceDetailsRepo.findById(id);
+		serviceDetails.orElseThrow(() -> new ServiceDetailsNotFoundException("Couldn't find Service details with id " + id));
+		
+		serviceDetails.get().setDeleted(true);
+		serviceDetailsRepo.save(serviceDetails.get());
+		List<Schedule> schedules = scheduleRepo.findByServiceDetails(serviceDetails.get());
+		String msg = basicUtil.deleteAllSchedules(schedules, "Service not available");
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", (serviceDetails.get().getServiceName() + " deleted successfully. " + msg)) + "}" , HttpStatus.OK);
+	}
+	
 	
 }

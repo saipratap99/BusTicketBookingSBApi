@@ -79,6 +79,9 @@ public class ScheduleController {
 			scheduleMap.put("duration", String.valueOf(schedule.getDuration()));
 			scheduleMap.put("basePrice", String.valueOf(schedule.getBasePrice()));
 			
+			if(schedule.isDeleted())
+				continue;
+			
 			if(basicUtil.isAdmin(user.get()))
 				schedulesMap.add(scheduleMap);
 			else if(basicUtil.isOperator(user.get()) && basicUtil.isScheduleBelongsToOperator(schedule, user.get()))
