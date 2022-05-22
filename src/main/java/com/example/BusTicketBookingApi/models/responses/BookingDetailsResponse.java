@@ -19,6 +19,7 @@ public class BookingDetailsResponse {
 	private double basePrice;
 	private double gst;
 	private double discount;
+	private String cancellationFeedback;
 	private Timestamp bookedAt;
 	
 	
@@ -110,7 +111,14 @@ public class BookingDetailsResponse {
 		this.discount = discount;
 	}
 	
-	
+	public String getCancellationFeedback() {
+		return cancellationFeedback;
+	}
+
+	public void setCancellationFeedback(String cancellationFeedback) {
+		this.cancellationFeedback = cancellationFeedback;
+	}
+
 	public BookingDetailsResponse getInstance(BookingDetails bookingDetails, String[] seats) {
 		
 		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse();
@@ -126,6 +134,7 @@ public class BookingDetailsResponse {
 		bookingDetailsResponse.setSeats(seats);
 		bookingDetailsResponse.setStatus(bookingDetails.getStatus());
 		bookingDetailsResponse.setBookedAt(bookingDetails.getBookedAt());
+		bookingDetailsResponse.setCancellationFeedback(bookingDetails.getCancellationFeedback());
 		
 		return bookingDetailsResponse;
 	}

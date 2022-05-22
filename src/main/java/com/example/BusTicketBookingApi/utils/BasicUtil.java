@@ -1,9 +1,11 @@
 package com.example.BusTicketBookingApi.utils;
 
 import java.security.Principal;
+import java.sql.Date;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.BusTicketBookingApi.daos.BookingDeatilsRepo;
+import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.UserRepo;
+import com.example.BusTicketBookingApi.models.BookingDetails;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.User;
@@ -21,6 +26,12 @@ import com.example.BusTicketBookingApi.models.User;
 public class BasicUtil {
 	@Autowired 
 	UserRepo userRepo;
+	
+	@Autowired
+	ScheduleRepo scheduleRepo;
+	
+	@Autowired 
+	BookingDeatilsRepo bookingDeatilsRepo;
 	
 	public Time parseStringToSqlTime(String time) throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
@@ -110,6 +121,48 @@ public class BasicUtil {
 
 	public boolean isScheduleBelongsToOperator(Schedule schedule, User operator) {
 		return operator.getOperator().equalsIgnoreCase(schedule.getBusDetails().getOperator().getOperator());
+	}
+	
+	
+	public String deleteAllSchedules(List<Schedule> schedules,String cancellationFeedback ) {
+		
+		int schedulesCancelledCount = 0;
+		int bookingsCancelledCount = 0;
+		
+		if(schedules == null)
+			return "Schedules cancelled: " + schedulesCancelledCount + "and Bookings cancelled: 0";
+		
+		for(Schedule schedule: schedules) {
+			schedule.setDeleted(true);
+			scheduleRepo.save(schedule);
+			schedulesCancelledCount++;
+			List<BookingDetails> bookings = bookingDeatilsRepo.findByScheduleAndStatus(schedule, "SUCCESS");
+			bookingsCancelledCount += cancelAllUpComingBookingsIfBooked(bookings, cancellationFeedback);
+		}
+		
+		return "Schedules cancelled: " + schedulesCancelledCount + " and Bookings cancelled: " + bookingsCancelledCount;
+		
+	}
+
+	private int cancelAllUpComingBookingsIfBooked(List<BookingDetails> bookingDetails, String cancellationFeedback) {
+		
+		int bookingsCancelledCount = 0;
+		
+		if(bookingDetails == null)
+			return bookingsCancelledCount;
+		
+		for(BookingDetails booking: bookingDetails) {
+			Date currDate = new Date(System.currentTimeMillis());
+			
+			if(booking.getDoj().after(currDate)) {
+				booking.setCancellationFeedback(cancellationFeedback);
+				booking.setStatus("CANCELED");
+				bookingsCancelledCount++;
+				bookingDeatilsRepo.save(booking);
+			}
+		}
+		
+		return bookingsCancelledCount;
 	}
 	
 }

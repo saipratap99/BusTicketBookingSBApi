@@ -1,4 +1,4 @@
-	package com.example.BusTicketBookingApi.controllers;
+package com.example.BusTicketBookingApi.controllers;
 
 import java.security.Principal;
 import java.sql.Timestamp;
@@ -57,9 +57,9 @@ public class BookingsController {
 		List<BookingDetailsResponse> response = new LinkedList<>();
 		
 		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse(); 
-		
+
 		for(BookingDetails bookDetail: bookingDetails) {
-			if(!bookDetail.getStatus().equals("SUCCESS"))
+			if(!(bookDetail.getStatus().equals("SUCCESS") || bookDetail.getStatus().equals("CANCELED")))
 				continue;
 			List<BookedSeat> bookedSeats = bookedSeatsRepo.findAllByBookingDetailsId(bookDetail.getId());
 			String[] seats = new String[bookedSeats.size()];

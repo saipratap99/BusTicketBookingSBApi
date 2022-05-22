@@ -46,6 +46,9 @@ public class Schedule {
 	@ManyToOne(optional = false)
 	ServiceDetails serviceDetails;
 	
+	@Column(name="is_deleted", columnDefinition = "boolean default false")
+	private boolean isDeleted;
+	
 //	@OneToMany(mappedBy = "schedule")
 //	List<BookingDetails> bookingDetails;
 
@@ -119,5 +122,22 @@ public class Schedule {
 
 	public void setWeekDay(int weekDay) {
 		this.weekDay = weekDay;
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+	/*
+	public List<BookingDetails> getBookingDetails() {
+		return bookingDetails;
+	}
+
+	public void setBookingDetails(List<BookingDetails> bookingDetails) {
+		this.bookingDetails = bookingDetails;
 	}	
+	*/
 }

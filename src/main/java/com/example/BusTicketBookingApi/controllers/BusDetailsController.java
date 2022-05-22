@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.BusTicketBookingApi.daos.BusDetailsRepo;
 import com.example.BusTicketBookingApi.daos.LocationRepo;
+import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.SeatingTypeRepo;
 import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
 import com.example.BusTicketBookingApi.daos.UserRepo;
@@ -30,6 +31,7 @@ import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.SeatingTypeNotFound;
 import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
 import com.example.BusTicketBookingApi.models.BusDetails;
+import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.SeatingType;
 import com.example.BusTicketBookingApi.models.User;
 import com.example.BusTicketBookingApi.models.requests.BusDetailsRequest;
@@ -57,6 +59,9 @@ public class BusDetailsController {
 	@Autowired
 	BasicUtil basicUtil;
 	
+	@Autowired
+	ScheduleRepo scheduleRepo;
+	
 	@GetMapping("/")
 	public ResponseEntity<?> getBuses(Model model, Principal principal) throws UserNotFoundException {
 		
@@ -78,6 +83,9 @@ public class BusDetailsController {
 			busMap.put("operator", busDetail.getOperator().getOperator());
 			busMap.put("lastMaintance", busDetail.getLastMaintance().toString());
 			busMap.put("onService", busDetail.getOnService().toString());
+			
+			if(busDetail.isDeleted())
+				continue;
 			
 			if(basicUtil.isAdmin(user.get()))
 				busesMap.add(busMap);
@@ -142,11 +150,22 @@ public class BusDetailsController {
 	}
 	
 	@DeleteMapping("{id}")
-	public ResponseEntity<?> delete(@PathVariable int id) throws BusDetailsNotFoundException{
-		Optional<BusDetails> existingBusDetails = busDetailsRepo.findById(id);
-		existingBusDetails.orElseThrow(() -> new BusDetailsNotFoundException("Couldn't find Bus details with id " + id));
+	public ResponseEntity<?> delete(@PathVariable int id, Principal principal) throws BusDetailsNotFoundException, UserNotFoundException{
 		
-		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", (existingBusDetails.get().getBusName() + " deleted successfully")) + "}" , HttpStatus.OK);
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
+		
+		Optional<BusDetails> busDetails = busDetailsRepo.findById(id);
+		busDetails.orElseThrow(() -> new BusDetailsNotFoundException("Couldn't find Bus details with id " + id));
+		
+		if(basicUtil.isOperator(user.get()) && !basicUtil.isBusBelongsToOperator(busDetails.get(),user.get()))
+			throw new AccessDeniedException("Access denied");
+		
+		busDetails.get().setDeleted(true);
+		busDetailsRepo.save(busDetails.get());
+		List<Schedule> schedules = scheduleRepo.findByBusDetails(busDetails.get());
+		String msg = basicUtil.deleteAllSchedules(schedules, "Allotted Bus is not available");
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", (busDetails.get().getBusName() + " deleted successfully. " + msg)) + "}" , HttpStatus.OK);
 	}
 	
 	

@@ -44,10 +44,12 @@ public class BookingDetails {
 	@Column(nullable = false)
 	private int duration;
 	
-	
 	@Column(columnDefinition = "Decimal(10,2) default '0.0'")
 	private double ratings;
-		
+	
+	@Column(name = "cancellation_feedback")
+	private String cancellationFeedback;
+	
 	@ManyToOne(optional = false) // many bookings belongs to one user
 	private User user; 
 	
@@ -58,6 +60,14 @@ public class BookingDetails {
 	
 	public int getId() {
 		return id;
+	}
+
+	public String getCancellationFeedback() {
+		return cancellationFeedback;
+	}
+
+	public void setCancellationFeedback(String cancellationFeedback) {
+		this.cancellationFeedback = cancellationFeedback;
 	}
 
 	public void setId(int id) {

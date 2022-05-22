@@ -47,8 +47,11 @@ public class BusDetails {
 	@ManyToOne(optional = false)
 	private User operator;
 	
+	@Column(name="is_deleted", columnDefinition = "boolean default false")
+	private boolean isDeleted;
+	
 //	@OneToMany(mappedBy = "busDetails")
-//	List<Schedule> schedule;
+//	List<Schedule> schedules;
 	
 	// created_at, updated_at
 	
@@ -137,16 +140,24 @@ public class BusDetails {
 	public void setOperator(User operator) {
 		this.operator = operator;
 	}
-/*
-	public List<Schedule> getSchedule() {
-		return schedule;
+
+	public boolean isDeleted() {
+		return isDeleted;
 	}
 
-	public void setSchedule(List<Schedule> schedule) {
-		this.schedule = schedule;
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
-*/
+	
+	/*
+	public List<Schedule> getSchedules() {
+		return schedules;
+	}
 
+	public void setSchedules(List<Schedule> schedules) {
+		this.schedules = schedules;
+	}
+	*/
 	
 }
 

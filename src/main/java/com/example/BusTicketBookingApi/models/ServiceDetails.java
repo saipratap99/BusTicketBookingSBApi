@@ -29,6 +29,9 @@ public class ServiceDetails {
 		
 	@Column(nullable = false)
 	private double distance;
+	
+	@Column(name = "is_deleted", columnDefinition = "boolean default false")
+	private boolean isDeleted;
 
 	@ManyToOne(optional = false) // many services may have same departure location.
 	private Location departureLocation;
@@ -107,6 +110,14 @@ public class ServiceDetails {
 	
 	public void genrateServiceName() { 
 		this.setServiceName(this.getServiceNumber() + " " + this.getDepartureLocation().getLocationName() + " - " + this.getArrivalLocation().getLocationName() + " " + this.getServiceType());
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 	@Override
