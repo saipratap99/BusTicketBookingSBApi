@@ -286,7 +286,15 @@ public class UsersController {
 	}
 
 	@GetMapping("/logout")
-	public ResponseEntity<?> logOut(){
+	public ResponseEntity<?> logOut(HttpServletResponse response){
+		Cookie refreshCookie = new Cookie("refreshToken", "");
+		refreshCookie.setPath("/");
+		refreshCookie.setMaxAge(0);
+		refreshCookie.setHttpOnly(true);
+		refreshCookie.setSecure(true);
+		
+		response.addCookie(refreshCookie);
+		
 		return new ResponseEntity<>("{" + basicUtil.getJSONString("msg", "Logged out successfully") + "}", HttpStatus.OK);
 	}
 

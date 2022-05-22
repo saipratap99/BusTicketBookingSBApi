@@ -29,9 +29,6 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	JwtRequestFilter jwtRequestFilter;
 	
-//	@Autowired
-//	SessionRequestFilter sessionRequestFilter;
-	
 	@Autowired
 	PropertiesUtil propertiesUtil;
 	
@@ -45,16 +42,7 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	// Authorization
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		
-//		http.cors().configurationSource(request -> {
-//			  CorsConfiguration cors = new CorsConfiguration();
-//		      cors.setAllowedOrigins(List.of("http://localhost:4200/"));
-//		      cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
-//		      cors.setAllowedHeaders(List.of("*"));
-//		      cors.setExposedHeaders(List.of("*"));
-//		      return cors;
-//		});
-		
+	
 		http.cors();
 		
 		http.csrf().disable()
@@ -78,17 +66,12 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 			http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 		}
 		
-//		if(propertiesUtil.isSessionsBasedAuth())
-//			http.addFilterBefore(sessionRequestFilter, UsernamePasswordAuthenticationFilter.class);
-		
-		
-		
-		
 		http
 		.logout()
 			.logoutRequestMatcher(new AntPathRequestMatcher("/api/v1/users/logout", "POST"))
 			.clearAuthentication(true)
 			.deleteCookies("refreshToken")
+			.invalidateHttpSession(true)
 			.logoutSuccessUrl("/api/v1/users/logout");
 
 	}
