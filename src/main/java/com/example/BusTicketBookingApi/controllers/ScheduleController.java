@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.BusTicketBookingApi.daos.BookingDeatilsRepo;
 import com.example.BusTicketBookingApi.daos.BusDetailsRepo;
 import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
@@ -30,6 +32,7 @@ import com.example.BusTicketBookingApi.exceptions.InvalidWeekDayException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.ServiceDetailsNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
+import com.example.BusTicketBookingApi.models.BookingDetails;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.ServiceDetails;
@@ -56,6 +59,9 @@ public class ScheduleController {
 	
 	@Autowired
 	ScheduleRepo scheduleRepo;
+	
+	@Autowired
+	BookingDeatilsRepo bookingDeatilsRepo;
 
 	
 	@GetMapping("/")
@@ -155,6 +161,26 @@ public class ScheduleController {
 		
 		scheduleRepo.save(schedule);
 		return new ResponseEntity<Schedule>(schedule, HttpStatus.ACCEPTED);
+	}
+	
+	@DeleteMapping("{id}")
+	public ResponseEntity<?> delete(@PathVariable int id, Principal principal) throws UserNotFoundException, ScheduleDetailsNotFoundException {
+		
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
+		
+		Optional<Schedule> schedule = scheduleRepo.findById(id);
+		schedule.orElseThrow(() -> new ScheduleDetailsNotFoundException("Couldn't find Schedule details with id " + id));
+		
+		if(basicUtil.isOperator(user.get()) && !basicUtil.isScheduleBelongsToOperator(schedule.get(), user.get()))
+			throw new AccessDeniedException("Access denied");
+		
+		schedule.get().setDeleted(true);
+		scheduleRepo.save(schedule.get());
+		
+		List<BookingDetails> bookings = bookingDeatilsRepo.findByScheduleAndStatus(schedule.get(), "SUCCESS");
+		int deletedBookingDetailsCount = basicUtil.cancelAllUpComingBookingsIfBooked(bookings, "Schedule cancelled");
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", (schedule.get().getId() + " deleted successfully. " + "Bookings Cancelled: " + deletedBookingDetailsCount)) + "}" , HttpStatus.OK);
 	}
 	
 

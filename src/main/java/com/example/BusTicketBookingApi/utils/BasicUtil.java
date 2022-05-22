@@ -144,7 +144,7 @@ public class BasicUtil {
 		
 	}
 
-	private int cancelAllUpComingBookingsIfBooked(List<BookingDetails> bookingDetails, String cancellationFeedback) {
+	public int cancelAllUpComingBookingsIfBooked(List<BookingDetails> bookingDetails, String cancellationFeedback) {
 		
 		int bookingsCancelledCount = 0;
 		
