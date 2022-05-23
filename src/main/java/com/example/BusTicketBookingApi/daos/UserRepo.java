@@ -9,12 +9,12 @@ public interface UserRepo extends JpaRepository<User, Integer>{
 	User findByEmail(String email);
 	
 	@Query("SELECT count(*) FROM User where role != 'ROLE_ADMIN'")
-	int countAllUsers();
+	Integer countAllUsers();
 	
 	@Query("SELECT count(*) FROM User where role = 'ROLE_USER'")
-	int countAllCustomers();
+	Integer countAllCustomers();
 	
 	@Query("SELECT count(*) FROM User where role = 'ROLE_OPERATOR'")
-	int countAllOperators();
+	Integer countAllOperators();
 	
 }

@@ -1,6 +1,5 @@
 package com.example.BusTicketBookingApi.controllers;
 
-import java.net.http.HttpResponse;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +24,7 @@ import com.example.BusTicketBookingApi.utils.BasicUtil;
 @RestController
 @RequestMapping("/api/v1/dashboard")
 public class DashboardController {
+	
 	@Autowired
 	BusDetailsRepo busDetailsRepo;
 	
@@ -43,7 +43,6 @@ public class DashboardController {
 	@Autowired
 	UserRepo userRepo;
 	
-	
 	@GetMapping("/get-operator-name")
 	public ResponseEntity<?> getOperatorName(Principal principal) throws UserNotFoundException{
 		Optional<User> user = basicUtil.getUser(principal);
@@ -52,7 +51,6 @@ public class DashboardController {
 		return new ResponseEntity<>("{" + basicUtil.getJSONString("operatorName", user.get().getOperator()) + "}", HttpStatus.OK);
 	}
 	
-	
 	@GetMapping("/buses")
 	public ResponseEntity<?> getBusesStats(Principal principal) throws UserNotFoundException{
 		
@@ -60,17 +58,23 @@ public class DashboardController {
 		user.orElseThrow(() -> new UserNotFoundException("User not found"));
 		
 		Map<String, Integer> busesStat = new HashMap<>();
+		Integer totalCount, runningCount, stoppedCount;
+		
 		if(basicUtil.isAdmin(user.get())) {	
-			busesStat.put("totalCount", busDetailsRepo.getAllBuses());
-			busesStat.put("runningCount", busDetailsRepo.getAllRunningBuses());
-			busesStat.put("stoppedCount", busDetailsRepo.getAllStoppedBuses());
-			return new ResponseEntity<>(busesStat, HttpStatus.OK);
+			totalCount = busDetailsRepo.getAllBuses();
+			runningCount = busDetailsRepo.getAllRunningBuses();
+			stoppedCount = busDetailsRepo.getAllStoppedBuses();
 		}else {
-			busesStat.put("totalCount", busDetailsRepo.getAllBusesOfOperator(user.get().getOperator()));
-			busesStat.put("runningCount", busDetailsRepo.getAllRunningBusesOfOperator(user.get().getOperator()));
-			busesStat.put("stoppedCount", busDetailsRepo.getAllStoppedBusesOfOperator(user.get().getOperator()));
-			return new ResponseEntity<>(busesStat, HttpStatus.OK);
+			totalCount = busDetailsRepo.getAllBusesOfOperator(user.get().getOperator());
+			runningCount = busDetailsRepo.getAllRunningBusesOfOperator(user.get().getOperator());
+			stoppedCount = busDetailsRepo.getAllStoppedBusesOfOperator(user.get().getOperator());
 		}
+		
+		busesStat.put("totalCount", totalCount != null ? totalCount : 0);
+		busesStat.put("runningCount", runningCount != null ? runningCount : 0);
+		busesStat.put("stoppedCount", stoppedCount != null ? stoppedCount : 0);
+		return new ResponseEntity<>(busesStat, HttpStatus.OK);
+		
 	}
 	
 	@GetMapping("/bookings")
@@ -80,17 +84,25 @@ public class DashboardController {
 		user.orElseThrow(() -> new UserNotFoundException("User not found"));
 		
 		Map<String, Integer> bookingsStat = new HashMap<>();
+		Integer totalCount, successCount, cancelledCount;
+		
 		if(basicUtil.isAdmin(user.get())) {	
-			bookingsStat.put("totalCount", bookingDeatilsRepo.countAllBookings());
-			bookingsStat.put("successCount", bookingDeatilsRepo.countAllBookingsForStatus("SUCCESS"));
-			bookingsStat.put("cancelledCount", bookingDeatilsRepo.countAllBookingsForStatus("CANCELED"));
-			return new ResponseEntity<>(bookingsStat, HttpStatus.OK);
+			totalCount = bookingDeatilsRepo.countAllBookings();
+			successCount = bookingDeatilsRepo.countAllBookingsForStatus("SUCCESS");
+			cancelledCount = bookingDeatilsRepo.countAllBookingsForStatus("CANCELED");
+			
 		}else {
-			bookingsStat.put("totalCount", bookingDeatilsRepo.countAllBookingsOfOperator(user.get().getOperator()));
-			bookingsStat.put("successCount", bookingDeatilsRepo.countAllBookingsOfOperatorForStatus(user.get().getOperator(), "SUCCESS"));
-			bookingsStat.put("cancelledCount", bookingDeatilsRepo.countAllBookingsOfOperatorForStatus(user.get().getOperator(), "CANCELED"));
-			return new ResponseEntity<>(bookingsStat, HttpStatus.OK);
+			totalCount =  bookingDeatilsRepo.countAllBookingsOfOperator(user.get().getOperator());
+			successCount = bookingDeatilsRepo.countAllBookingsOfOperatorForStatus(user.get().getOperator(), "SUCCESS");
+			cancelledCount = bookingDeatilsRepo.countAllBookingsOfOperatorForStatus(user.get().getOperator(), "CANCELED");
 		}
+		
+		bookingsStat.put("totalCount", totalCount != null ? totalCount : 0);
+		bookingsStat.put("successCount", successCount != null ? successCount : 0);
+		bookingsStat.put("cancelledCount", cancelledCount != null ? cancelledCount : 0);
+		
+		
+		return new ResponseEntity<>(bookingsStat, HttpStatus.OK);
 	}
 	
 	@GetMapping("/services")
@@ -99,9 +111,15 @@ public class DashboardController {
 		user.orElseThrow(() -> new UserNotFoundException("User not found"));
 		
 		Map<String, Integer> servicesStat = new HashMap<>();
-		servicesStat.put("totalCount", serviceDetailsRepo.countAllServices());
-		servicesStat.put("runningCount", serviceDetailsRepo.countAllRunningServices());
-		servicesStat.put("stoppedCount", serviceDetailsRepo.countAllStoppedServices());
+		Integer totalCount, runningCount, stoppedCount;
+		
+		totalCount = serviceDetailsRepo.countAllServices();
+		runningCount = serviceDetailsRepo.countAllRunningServices();
+		stoppedCount = serviceDetailsRepo.countAllStoppedServices();
+		
+		servicesStat.put("totalCount", totalCount != null ? totalCount : 0);
+		servicesStat.put("runningCount", runningCount != null ? runningCount : 0);
+		servicesStat.put("stoppedCount", stoppedCount != null ? stoppedCount : 0);
 		
 		return new ResponseEntity<>(servicesStat, HttpStatus.OK);
 	}
@@ -114,27 +132,37 @@ public class DashboardController {
 		user.orElseThrow(() -> new UserNotFoundException("User not found"));
 		
 		Map<String, Integer> schedulesStats = new HashMap<>();
+		Integer totalCount, runningCount, stoppedCount;
+		
 		if(basicUtil.isAdmin(user.get())) {	
-			schedulesStats.put("totalCount", scheduleRepo.countAllSchedules());
-			schedulesStats.put("runningCount", scheduleRepo.countAllRunningSchedules());
-			schedulesStats.put("stoppedCount", scheduleRepo.countAllStoppedSchedules());
-			return new ResponseEntity<>(schedulesStats, HttpStatus.OK);
+			totalCount = scheduleRepo.countAllSchedules();
+			runningCount = scheduleRepo.countAllRunningSchedules();
+			stoppedCount = scheduleRepo.countAllStoppedSchedules();
 		}else {
-			schedulesStats.put("totalCount", scheduleRepo.countAllSchedulesOfOperator(user.get().getOperator()));
-			schedulesStats.put("runningCount", scheduleRepo.countAllRunningSchedulesOfOperator(user.get().getOperator()));
-			schedulesStats.put("stoppedCount", scheduleRepo.countAllStoppedSchedulesOfOperator(user.get().getOperator()));
-			return new ResponseEntity<>(schedulesStats, HttpStatus.OK);
+			totalCount = scheduleRepo.countAllSchedulesOfOperator(user.get().getOperator());
+			runningCount = scheduleRepo.countAllRunningSchedulesOfOperator(user.get().getOperator());
+			stoppedCount = scheduleRepo.countAllStoppedSchedulesOfOperator(user.get().getOperator());
 		}
+		
+		schedulesStats.put("totalCount", totalCount != null ? totalCount : 0);
+		schedulesStats.put("runningCount", runningCount != null ? runningCount : 0);
+		schedulesStats.put("stoppedCount", stoppedCount != null ? stoppedCount : 0);
+		return new ResponseEntity<>(schedulesStats, HttpStatus.OK);
 	}
 	
 	@GetMapping("/users")
 	public ResponseEntity<?> getUserStats(Principal principal){
 		Map<String, Integer> userStats = new HashMap<>();
 		
-		userStats.put("totalCount", userRepo.countAllUsers());
-		userStats.put("customersCount", userRepo.countAllCustomers());
-		userStats.put("operatorsCount", userRepo.countAllOperators());
+		Integer totalCount = userRepo.countAllUsers();
+		Integer customersCount = userRepo.countAllCustomers(); 
+		Integer operatorsCount = userRepo.countAllOperators();
+		
+		userStats.put("totalCount", totalCount != null ? totalCount : 0);
+		userStats.put("customersCount", customersCount != null ? customersCount : 0);
+		userStats.put("operatorsCount", operatorsCount != null ? operatorsCount : 0);
+		
 		return new ResponseEntity<>(userStats, HttpStatus.OK);
 	}
-	
+
 }

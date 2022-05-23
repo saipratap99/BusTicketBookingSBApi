@@ -13,5 +13,5 @@ public interface SeatsRepo extends JpaRepository<Seat, Integer>{
 	List<Seat> findAllBySeatingType(int seatingTypeId);
 	
 	@Query("SELECT count(*) from Seat where seatingType.seating = :seatingType group by seatingType.seating")
-	int countNumberOfSeatsForSeatingType(String seatingType);
+	Integer countNumberOfSeatsForSeatingType(String seatingType);
 }

@@ -14,15 +14,15 @@ public interface BookingDeatilsRepo extends JpaRepository<BookingDetails, Intege
 	List<BookingDetails> findByScheduleAndStatus(Schedule schedule, String status);
 	
 	@Query("SELECT count(*) FROM BookingDetails where status != 'HOLD'")	
-	int countAllBookings();
+	Integer countAllBookings();
 	
 	@Query("SELECT count(*) FROM BookingDetails where schedule.busDetails.operator.operator = :operator and status != 'HOLD' group by schedule.busDetails.operator.operator")
-	int countAllBookingsOfOperator(String operator);
+	Integer countAllBookingsOfOperator(String operator);
 	
 	@Query("SELECT count(*) FROM BookingDetails where status = :status")
-	int countAllBookingsForStatus(String status);
+	Integer countAllBookingsForStatus(String status);
 	
 	@Query("SELECT count(*) FROM BookingDetails where schedule.busDetails.operator.operator = :operator and status = :status group by schedule.busDetails.operator.operator")
-	int countAllBookingsOfOperatorForStatus(String operator, String status);
+	Integer countAllBookingsOfOperatorForStatus(String operator, String status);
 	
 }
