@@ -11,4 +11,7 @@ import com.example.BusTicketBookingApi.models.Seat;
 public interface SeatsRepo extends JpaRepository<Seat, Integer>{
 	@Query("FROM Seat where seatingType.id = :seatingTypeId order by seatRow, seatCol")
 	List<Seat> findAllBySeatingType(int seatingTypeId);
+	
+	@Query("SELECT count(*) from Seat where seatingType.seating = :seatingType group by seatingType.seating")
+	int countNumberOfSeatsForSeatingType(String seatingType);
 }

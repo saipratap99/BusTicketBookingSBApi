@@ -53,7 +53,7 @@ public class BookingsController {
 	@GetMapping("/")
 	public ResponseEntity<?> getAllBookings(Principal principal){
 		Optional<User> user = basicUtil.getUser(principal);
-		List<BookingDetails> bookingDetails = bookingDeatilsRepo.findAllByUserId(user.get().getId());
+		List<BookingDetails> bookingDetails = bookingDeatilsRepo.findAllByUserIdOrderByDojDesc(user.get().getId());
 		List<BookingDetailsResponse> response = new LinkedList<>();
 		
 		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse(); 
