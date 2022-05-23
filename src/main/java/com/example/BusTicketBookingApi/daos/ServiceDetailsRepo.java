@@ -17,4 +17,13 @@ public interface ServiceDetailsRepo extends JpaRepository<ServiceDetails, Intege
 	
 	@Query("SELECT serviceName FROM ServiceDetails order by serviceName")
 	List<String> findAllProjectedByServiceName();
+	
+	@Query("SELECT count(*) FROM ServiceDetails")
+	int countAllServices();
+	
+	@Query("SELECT count(*) FROM ServiceDetails where isDeleted = false")
+	int countAllRunningServices();
+	
+	@Query("SELECT count(*) FROM ServiceDetails where isDeleted = true")
+	int countAllStoppedServices();
 }
