@@ -25,6 +25,7 @@ import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.SeatingTypeRepo;
 import com.example.BusTicketBookingApi.daos.SeatsRepo;
 import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.InvalidBookingDateException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleNotFoundException;
 import com.example.BusTicketBookingApi.models.BusDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
@@ -60,7 +61,11 @@ public class SeatsController {
 	@GetMapping("/schedule/{scheduleId}/bus/{busId}/{doj}/{depTime}")
 	public ResponseEntity<?> getAvailableSeats(@PathVariable int scheduleId, @PathVariable int busId,
 											   @PathVariable Date doj, @PathVariable String depTime, Principal principal) 
-											   throws BusDetailsNotFoundException, ScheduleNotFoundException{
+											   throws BusDetailsNotFoundException, ScheduleNotFoundException, InvalidBookingDateException{
+		
+		if(basicUtil.isDateBeforeCurrDate(doj))
+			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
 		
 		Time time = Time.valueOf(depTime.replaceAll("-", ":"));
 		

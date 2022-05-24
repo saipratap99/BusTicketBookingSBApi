@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.BusTicketBookingApi.daos.LocationRepo;
 import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.ServiceDetailsRepo;
+import com.example.BusTicketBookingApi.exceptions.InvalidBookingDateException;
 import com.example.BusTicketBookingApi.models.Schedule;
 import com.example.BusTicketBookingApi.models.ServiceDetails;
 import com.example.BusTicketBookingApi.utils.BasicUtil;
@@ -40,8 +41,11 @@ public class SearchController {
 	@GetMapping("/buses/{depLocation}/{depId}/{arrLocation}/{arrId}/{date}")
 	public ResponseEntity<?> availableBuses(@PathVariable String depLocation, @PathVariable int depId, 
 											@PathVariable String arrLocation, @PathVariable int arrId,
-											@PathVariable Date date, Principal principal) {
+											@PathVariable Date date, Principal principal) throws InvalidBookingDateException {
 
+		if(basicUtil.isDateBeforeCurrDate(date))
+			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
 		List<ServiceDetails> serviceDetails = null;
 		List<Schedule> schedules = new LinkedList<>();
 		

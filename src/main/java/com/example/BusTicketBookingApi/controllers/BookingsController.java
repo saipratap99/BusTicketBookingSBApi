@@ -21,6 +21,7 @@ import com.example.BusTicketBookingApi.daos.BookingDeatilsRepo;
 import com.example.BusTicketBookingApi.daos.ScheduleRepo;
 import com.example.BusTicketBookingApi.daos.SeatsRepo;
 import com.example.BusTicketBookingApi.exceptions.BookingDeatilsNotFound;
+import com.example.BusTicketBookingApi.exceptions.InvalidBookingDateException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleNotFoundException;
 import com.example.BusTicketBookingApi.models.BookedSeat;
 import com.example.BusTicketBookingApi.models.BookingDetails;
@@ -53,7 +54,7 @@ public class BookingsController {
 	@GetMapping("/")
 	public ResponseEntity<?> getAllBookings(Principal principal){
 		Optional<User> user = basicUtil.getUser(principal);
-		List<BookingDetails> bookingDetails = bookingDeatilsRepo.findAllByUserIdOrderByDojDesc(user.get().getId());
+		List<BookingDetails> bookingDetails = bookingDeatilsRepo.findAllByUserIdOrderByDojDescTimeDescBookedAtDesc(user.get().getId());
 		List<BookingDetailsResponse> response = new LinkedList<>();
 		
 		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse(); 
@@ -76,7 +77,11 @@ public class BookingsController {
 	
 	@PostMapping("/new")
 	public ResponseEntity<?> createNewBooking(@RequestBody NewBookingRequest newBookingRequest, 
-												Principal principal) throws ScheduleNotFoundException{
+												Principal principal) throws ScheduleNotFoundException, InvalidBookingDateException{
+		
+		if(basicUtil.isDateBeforeCurrDate(newBookingRequest.getDate()))
+			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
 		if(newBookingRequest.getSelectedSeats().length == 0)
 			return new ResponseEntity<>("{\"msg\": \"Must select one seat atleast\"}", HttpStatus.BAD_REQUEST);
 	
@@ -114,11 +119,15 @@ public class BookingsController {
 	}
 	
 	@GetMapping("/confirm/{bookingId}")
-	public ResponseEntity<?> getBookingDetails(@PathVariable int bookingId) throws BookingDeatilsNotFound{
+	public ResponseEntity<?> getBookingDetails(@PathVariable int bookingId) throws BookingDeatilsNotFound, InvalidBookingDateException{
 		
 		Optional<BookingDetails> bookingDetails = bookingDeatilsRepo.findById(bookingId);
 		
 		bookingDetails.orElseThrow(() -> new BookingDeatilsNotFound("Booking details not found"));
+		
+		if(basicUtil.isDateBeforeCurrDate(bookingDetails.get().getDoj()))
+			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
 		
 		if(bookingDetails.get().getStatus().equalsIgnoreCase("SUCCESS"))
 			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", 
@@ -138,9 +147,13 @@ public class BookingsController {
 	
 	
 	@PostMapping("/confirm/{bookingId}")
-	public ResponseEntity<?> confirmBooking(@PathVariable int bookingId) throws BookingDeatilsNotFound{
+	public ResponseEntity<?> confirmBooking(@PathVariable int bookingId) throws BookingDeatilsNotFound, InvalidBookingDateException{
 		Optional<BookingDetails> bookingDetails = bookingDeatilsRepo.findById(bookingId);
-		bookingDetails.orElseThrow(() -> new BookingDeatilsNotFound("Booking details not found"));	
+		bookingDetails.orElseThrow(() -> new BookingDeatilsNotFound("Booking details not found"));
+		
+		if(basicUtil.isDateBeforeCurrDate(bookingDetails.get().getDoj()))
+			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
 		bookingDetails.get().setBookedAt(new Timestamp((new java.util.Date().getTime())));
 		bookingDetails.get().setStatus("SUCCESS");
 		bookingDeatilsRepo.save(bookingDetails.get());

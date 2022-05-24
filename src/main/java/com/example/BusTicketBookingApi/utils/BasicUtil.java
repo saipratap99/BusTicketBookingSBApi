@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,17 +45,6 @@ public class BasicUtil {
 		return Optional.ofNullable(userRepo.findByEmail(princpal.getName()));		
 	}
 	
-	public void addNavBarAttributesToModel(Principal principal, Model model) {
-		Optional<User> user = getUser(principal); 
-		
-		if(user.isPresent()) {
-			model.addAttribute("role", user.get().getRole());
-			model.addAttribute("isOperator", "ROLE_OPERATOR".equals(user.get().getRole()));
-			model.addAttribute("isAdmin", "ROLE_ADMIN".equals(user.get().getRole()));
-		}
-		
-	}
-	
 	public String getWeekDay(int week) {
 		switch(week){
 			case 1:
@@ -73,18 +63,6 @@ public class BasicUtil {
 				return "Saturday";
 		}
 		return "";
-	}
-	
-	public void addMsgToModel(String msg, String status, String show, Model model) {
-		model.addAttribute("msg", msg);
-		model.addAttribute("status", status);
-		model.addAttribute("show", show);
-	}
-	
-	public void addMsgToRedirectFlash(String msg, String status, String show, RedirectAttributes redirectAttributes) {
-		redirectAttributes.addFlashAttribute("msg", msg);
-		redirectAttributes.addFlashAttribute("status", status);
-		redirectAttributes.addFlashAttribute("show", show);
 	}
 	
 	public String getJSONString(String key, String value) {
@@ -164,5 +142,18 @@ public class BasicUtil {
 		
 		return bookingsCancelledCount;
 	}
+	
+	
+	public boolean isDateBeforeCurrDate(Date date) {
+		Date currDate = new Date(System.currentTimeMillis());
+		
+		LocalDate currLocalDate = currDate.toLocalDate();
+		LocalDate localDate = date.toLocalDate();
+		
+		return !(localDate.getDayOfMonth() >= currLocalDate.getDayOfMonth() 
+				&& localDate.getMonthValue() >= currLocalDate.getMonthValue()
+				&& localDate.getYear() >= currLocalDate.getYear());
+	}
+	
 	
 }

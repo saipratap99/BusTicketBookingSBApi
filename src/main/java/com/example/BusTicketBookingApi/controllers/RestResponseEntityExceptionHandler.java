@@ -7,6 +7,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.example.BusTicketBookingApi.exceptions.BusDetailsNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.InvalidBookingDateException;
 import com.example.BusTicketBookingApi.exceptions.InvalidWeekDayException;
 import com.example.BusTicketBookingApi.exceptions.LocationNotFoundException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleDetailsNotFoundException;
@@ -75,6 +76,10 @@ public class RestResponseEntityExceptionHandler {
 		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Please activate your account by signing up again!") + "}" , HttpStatus.BAD_REQUEST);
 	}
 	
+	@ExceptionHandler(value = InvalidBookingDateException.class)
+	public ResponseEntity<?> invalidBookingDateException(InvalidBookingDateException exception){
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", exception.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
+	}
 	
 	@ExceptionHandler(value = Exception.class)
 	public ResponseEntity<?> exception(Exception exception){
