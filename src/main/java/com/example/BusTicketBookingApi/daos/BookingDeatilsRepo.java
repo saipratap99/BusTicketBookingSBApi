@@ -13,6 +13,11 @@ public interface BookingDeatilsRepo extends JpaRepository<BookingDetails, Intege
 	
 	List<BookingDetails> findByScheduleAndStatus(Schedule schedule, String status);
 	
+	List<BookingDetails> findAllByOrderByDojDescTimeDescBookedAtDesc();
+	
+	@Query("FROM BookingDetails where schedule.busDetails.operator.operator = :operator order by doj desc, time desc, bookedAt desc")
+	List<BookingDetails> findAllOrderByDojDescTimeDescBookedAtDesc(String operator);
+	
 	@Query("SELECT count(*) FROM BookingDetails where status != 'HOLD'")	
 	Integer countAllBookings();
 	

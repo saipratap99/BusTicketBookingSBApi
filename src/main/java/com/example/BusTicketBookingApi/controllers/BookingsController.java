@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import com.example.BusTicketBookingApi.daos.SeatsRepo;
 import com.example.BusTicketBookingApi.exceptions.BookingDeatilsNotFound;
 import com.example.BusTicketBookingApi.exceptions.InvalidBookingDateException;
 import com.example.BusTicketBookingApi.exceptions.ScheduleNotFoundException;
+import com.example.BusTicketBookingApi.exceptions.UserNotFoundException;
 import com.example.BusTicketBookingApi.models.BookedSeat;
 import com.example.BusTicketBookingApi.models.BookingDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
@@ -52,7 +54,7 @@ public class BookingsController {
 	SeatsRepo seatsRepo;
 	
 	@GetMapping("/")
-	public ResponseEntity<?> getAllBookings(Principal principal){
+	public ResponseEntity<?> getAllUserBookings(Principal principal){
 		Optional<User> user = basicUtil.getUser(principal);
 		List<BookingDetails> bookingDetails = bookingDeatilsRepo.findAllByUserIdOrderByDojDescTimeDescBookedAtDesc(user.get().getId());
 		List<BookingDetailsResponse> response = new LinkedList<>();
@@ -74,6 +76,43 @@ public class BookingsController {
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 		
 	}
+	
+	@GetMapping("/all")
+	public ResponseEntity<?> getAllBookings(Principal principal) throws UserNotFoundException{
+		
+		Optional<User> user = basicUtil.getUser(principal);
+		user.orElseThrow(() -> new UserNotFoundException("User not found"));
+		
+		 if(user.get().getRole().equalsIgnoreCase("ROLE_USER"))
+			 throw new AccessDeniedException("Access denied");
+		
+		List<BookingDetails> bookingDetails;
+		if(basicUtil.isAdmin(user.get()))
+			bookingDetails = bookingDeatilsRepo.findAllByOrderByDojDescTimeDescBookedAtDesc();
+		else
+			bookingDetails = bookingDeatilsRepo.findAllOrderByDojDescTimeDescBookedAtDesc(user.get().getOperator());
+		
+		List<BookingDetailsResponse> response = new LinkedList<>();
+		
+		BookingDetailsResponse bookingDetailsResponse = new BookingDetailsResponse(); 
+
+		for(BookingDetails bookDetail: bookingDetails) {
+			if(!(bookDetail.getStatus().equals("SUCCESS") || bookDetail.getStatus().equals("CANCELED")))
+				continue;
+			List<BookedSeat> bookedSeats = bookedSeatsRepo.findAllByBookingDetailsId(bookDetail.getId());
+			String[] seats = new String[bookedSeats.size()];
+			
+			for(int i = 0; i < bookedSeats.size(); i++)
+				seats[i] = bookedSeats.get(i).getSeat().getSeatName();
+			
+			response.add(bookingDetailsResponse.getInstance(bookDetail, seats));
+		}
+		
+		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+		
+	}
+
+	
 	
 	@PostMapping("/new")
 	public ResponseEntity<?> createNewBooking(@RequestBody NewBookingRequest newBookingRequest, 
