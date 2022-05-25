@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,9 @@ import com.example.BusTicketBookingApi.utils.BasicUtil;
 @RestController
 @RequestMapping("/api/v1/search")
 public class SearchController {
+	
+	@Value("${app.max.days}")
+	Integer nDays;
 		
 	@Autowired
 	LocationRepo locationRepo;
@@ -45,6 +49,9 @@ public class SearchController {
 
 		if(basicUtil.isDateBeforeCurrDate(date))
 			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
+		if(basicUtil.isDateAfterNDays(date, nDays))
+			throw new InvalidBookingDateException("Departure date must be within "+ nDays +" days from current date");
 		
 		List<ServiceDetails> serviceDetails = null;
 		List<Schedule> schedules = new LinkedList<>();

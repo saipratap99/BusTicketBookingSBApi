@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -37,6 +38,9 @@ import com.example.BusTicketBookingApi.utils.BasicUtil;
 @RestController
 @RequestMapping("/api/v1/booking")
 public class BookingsController {
+	
+	@Value("${app.max.days}")
+	Integer nDays;
 	
 	@Autowired
 	BasicUtil basicUtil;
@@ -121,6 +125,9 @@ public class BookingsController {
 		if(basicUtil.isDateBeforeCurrDate(newBookingRequest.getDate()))
 			throw new InvalidBookingDateException("Departure date must not be before current date");
 		
+		if(basicUtil.isDateAfterNDays(newBookingRequest.getDate(), nDays))
+			throw new InvalidBookingDateException("Departure date must be within "+ nDays +" days from current date");
+		
 		if(newBookingRequest.getSelectedSeats().length == 0)
 			return new ResponseEntity<>("{\"msg\": \"Must select one seat atleast\"}", HttpStatus.BAD_REQUEST);
 	
@@ -167,6 +174,9 @@ public class BookingsController {
 		if(basicUtil.isDateBeforeCurrDate(bookingDetails.get().getDoj()))
 			throw new InvalidBookingDateException("Departure date must not be before current date");
 		
+		if(basicUtil.isDateAfterNDays(bookingDetails.get().getDoj(), nDays))
+			throw new InvalidBookingDateException("Departure date must be within "+ nDays +" days from current date");
+		
 		
 		if(bookingDetails.get().getStatus().equalsIgnoreCase("SUCCESS"))
 			return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", 
@@ -192,6 +202,10 @@ public class BookingsController {
 		
 		if(basicUtil.isDateBeforeCurrDate(bookingDetails.get().getDoj()))
 			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
+		if(basicUtil.isDateAfterNDays(bookingDetails.get().getDoj(), nDays))
+			throw new InvalidBookingDateException("Departure date must be within "+ nDays +" days from current date");
+		
 		
 		bookingDetails.get().setBookedAt(new Timestamp((new java.util.Date().getTime())));
 		bookingDetails.get().setStatus("SUCCESS");

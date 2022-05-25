@@ -11,8 +11,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.ui.Model;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.BusTicketBookingApi.daos.BookingDeatilsRepo;
 import com.example.BusTicketBookingApi.daos.ScheduleRepo;
@@ -150,10 +148,30 @@ public class BasicUtil {
 		LocalDate currLocalDate = currDate.toLocalDate();
 		LocalDate localDate = date.toLocalDate();
 		
-		return !(localDate.getDayOfMonth() >= currLocalDate.getDayOfMonth() 
-				&& localDate.getMonthValue() >= currLocalDate.getMonthValue()
-				&& localDate.getYear() >= currLocalDate.getYear());
+		if(localDate.getDayOfMonth() == currLocalDate.getDayOfMonth() && localDate.getMonthValue() == currLocalDate.getMonthValue() && localDate.getYear() == currLocalDate.getYear())
+			return false;
+		
+		return date.before(currDate);
 	}
 	
+	public boolean isDateAfterNDays(Date date, int nDays) {
+		Date currDate = new Date(System.currentTimeMillis());
+		
+		LocalDate currLocalDate = currDate.toLocalDate();
+		currLocalDate = currLocalDate.plusDays(nDays);
+		
+//		currDate.setDate(currLocalDate.getDayOfMonth());
+//		currDate.setMonth(currLocalDate.getMonthValue());
+//		currDate.setYear(currLocalDate.getYear());
+		
+		LocalDate localDate = date.toLocalDate();
+		
+//		if(localDate.getDayOfMonth() == currLocalDate.getDayOfMonth() && localDate.getMonthValue() == currLocalDate.getMonthValue() && localDate.getYear() == currLocalDate.getYear())
+//			return false;
+		System.out.println(currLocalDate.toString() + " " + localDate.toString());
+		return localDate.isAfter(currLocalDate);
+	}
+	
+
 	
 }

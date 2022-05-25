@@ -10,6 +10,7 @@ import java.util.Optional;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +41,9 @@ import com.example.BusTicketBookingApi.utils.BasicUtil;
 @RequestMapping("/api/v1/seats")
 public class SeatsController {
 	
+	@Value("${app.max.days}")
+	Integer nDays;
+	
 	@Autowired
 	ScheduleRepo scheduleRepo;
 	
@@ -65,6 +69,9 @@ public class SeatsController {
 		
 		if(basicUtil.isDateBeforeCurrDate(doj))
 			throw new InvalidBookingDateException("Departure date must not be before current date");
+		
+		if(basicUtil.isDateAfterNDays(doj, nDays))
+			throw new InvalidBookingDateException("Departure date must be within "+ nDays +" days from current date");
 		
 		
 		Time time = Time.valueOf(depTime.replaceAll("-", ":"));
