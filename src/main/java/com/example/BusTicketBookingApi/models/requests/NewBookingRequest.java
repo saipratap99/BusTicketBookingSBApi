@@ -4,6 +4,8 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import com.example.BusTicketBookingApi.models.BookedSeat;
 import com.example.BusTicketBookingApi.models.BookingDetails;
 import com.example.BusTicketBookingApi.models.Schedule;
@@ -11,6 +13,13 @@ import com.example.BusTicketBookingApi.models.Seat;
 import com.example.BusTicketBookingApi.models.User;
 
 public class NewBookingRequest {
+	
+	@Value("${app.current.gst}")
+	double gst;
+	
+	@Value("${app.current.discount}")
+	double discount;
+	
 	
 	private int scheduleId;
 	private int busId;
@@ -70,6 +79,8 @@ public class NewBookingRequest {
 		bookingDetails.setSchedule(schedule);
 		bookingDetails.setTime(time);
 		bookingDetails.setDoj(date);
+		bookingDetails.setGst(8.0);
+		bookingDetails.setDiscount(5);
 
 		return bookingDetails;
 		

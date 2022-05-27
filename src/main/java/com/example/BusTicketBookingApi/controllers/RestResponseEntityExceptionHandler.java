@@ -1,6 +1,8 @@
 package com.example.BusTicketBookingApi.controllers;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.DisabledException;
@@ -80,6 +82,12 @@ public class RestResponseEntityExceptionHandler {
 	public ResponseEntity<?> invalidBookingDateException(InvalidBookingDateException exception){
 		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", exception.getMessage()) + "}" , HttpStatus.BAD_REQUEST);
 	}
+	
+	@ExceptionHandler(value = DataIntegrityViolationException.class)
+	public ResponseEntity<?> dataIntegrityViolationException(DataIntegrityViolationException exception){
+		return new ResponseEntity<String>("{" + basicUtil.getJSONString("msg", "Selected Seat/ Seats blocked by another user.") + "}" , HttpStatus.BAD_REQUEST);
+	}
+	
 	
 	@ExceptionHandler(value = Exception.class)
 	public ResponseEntity<?> exception(Exception exception){

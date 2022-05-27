@@ -26,10 +26,10 @@ public class BookingDetails {
 	@Column(name = "base_price", nullable = false, columnDefinition = "Decimal(10,2) default '0.0'")
 	private double basePrice;
 	
-	@Column(name = "gst", nullable = false, columnDefinition = "Decimal(10,2) default '0.0'")
+	@Column(name = "gst", nullable = false, columnDefinition = "Decimal(10,2) default '8.0'")
 	private double gst;
 	
-	@Column(columnDefinition = "Decimal(10,2) default '0.0'")
+	@Column(columnDefinition = "Decimal(10,2) default '5.0'")
 	private double discount;
 	
 	@Column(name = "booked_at", nullable = false)
